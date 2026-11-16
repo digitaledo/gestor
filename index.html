@@ -4,63 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de substitucions - Escola Eugeni d'Ors</title>
-    
     <script>
         window.onerror = function(msg, url, line) {
             if (msg.includes('Script error') || line === 0) return true;
-            document.body.innerHTML = `
-                <div style="max-width:600px; margin:50px auto; background:#fee2e2; border:2px solid #ef4444; padding:20px; border-radius:8px; color:#991b1b; font-family:sans-serif;">
-                    <h2 style="font-size:1.5rem; font-weight:bold; margin-bottom:10px;">🚨 Error intern</h2>
-                    <div style="background:white; padding:10px; margin-top:10px; font-family:monospace; border:1px solid #fca5a5;">${msg} (Línia: ${line})</div>
-                </div>`;
+            document.body.innerHTML = '<div style="max-width:600px; margin:50px auto; background:#fee2e2; border:2px solid #ef4444; padding:20px; border-radius:8px; color:#991b1b; font-family:sans-serif;"><h2 style="font-size:1.5rem; font-weight:bold; margin-bottom:10px;">🚨 Error intern</h2><div style="background:white; padding:10px; margin-top:10px; font-family:monospace; border:1px solid #fca5a5;">' + msg + ' (Línia: ' + line + ')</div></div>';
             return false;
         };
     </script>
-
     <style>
         [v-cloak] { display: none !important; }
         .tab-activa { background-color: #1e3a8a; border-bottom: 3px solid #60a5fa; color: white; }
         .tab-inactiva { background-color: transparent; color: #bfdbfe; opacity: 0.9; }
         .tab-inactiva:hover { background-color: #1e40af; opacity: 1; }
-        
         .taula-wrapper { width: 100%; overflow-x: auto; padding-bottom: 0.5rem; }
         .taula-horaris { min-width: 800px; border-collapse: separate; border-spacing: 0; }
         .taula-horaris th, .taula-horaris td { border: 1px solid #e5e7eb; padding: 6px; text-align: left; vertical-align: top; }
         .taula-horaris th { background-color: #f9fafb; font-size: 0.85rem; text-transform: uppercase; color: #4b5563; text-align: center; }
-        
         .dia-calendari { cursor: pointer; transition: all 0.2s; }
         .dia-calendari:hover { background-color: #dbeafe; }
         .dia-seleccionat { background-color: #3b82f6 !important; color: white !important; font-weight: bold; border-radius: 8px; }
         .punt-absencia { width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-top: 2px; }
-        
-        /* Estils adaptats per al WhatsApp */
         .card { box-shadow: 0 4px 15px -5px rgba(0,0,0,.1); transition: border-color 0.2s; }
         .card:focus-within { border-color: #3b82f6; }
         .mono { font-variant-ligatures: none; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-        
         .day-dl { border-left: 4px solid #3b82f6; }
         .day-dm { border-left: 4px solid #10b981; }
         .day-dx { border-left: 4px solid #f59e0b; }
         .day-dj { border-left: 4px solid #facc15; }
         .day-dv { border-left: 4px solid #ec4899; }
-        
-        /* Scrollbars elegants per les caixes de configuració */
         .scroll-elegant::-webkit-scrollbar { width: 6px; }
         .scroll-elegant::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .scroll-elegant::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .scroll-elegant::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
-
 <div id="app" v-cloak>
     <datalist id="llista-grups"><option v-for="g in llistaGrupsDinamica" :key="g" :value="g"></option></datalist>
-
     <div v-if="!usuariAutenticat" class="min-h-screen flex items-center justify-center bg-slate-800">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             <div class="text-center mb-6">
@@ -76,7 +60,6 @@
             </div>
         </div>
     </div>
-
     <div v-else class="min-h-screen flex flex-col">
         <header class="bg-blue-800 shadow-lg">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
@@ -87,7 +70,7 @@
                     </div>
                     <button @click="tancarSessio" class="text-sm bg-blue-900/50 border border-blue-700 px-4 py-1.5 rounded-lg hover:bg-red-500 hover:border-red-500 transition shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Sortir</button>
                 </div>
-                <div class="flex space-x-1 overflow-x-auto pb-0 hide-scrollbar">
+                <div class="flex space-x-1 overflow-x-auto pb-0 scroll-elegant">
                     <button @click="vistaActual = 'tauler'" :class="vistaActual === 'tauler' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-3 font-bold text-sm rounded-t-xl transition whitespace-nowrap"><i class="fa-solid fa-table-list mr-2"></i>Tauler diari</button>
                     <button @click="vistaActual = 'horaris'" :class="vistaActual === 'horaris' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-3 font-bold text-sm rounded-t-xl transition whitespace-nowrap"><i class="fa-solid fa-calendar-week mr-2"></i>Gestió d'horaris</button>
                     <button @click="vistaActual = 'whatsapp'" :class="vistaActual === 'whatsapp' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-3 font-bold text-sm rounded-t-xl transition whitespace-nowrap"><i class="fa-brands fa-whatsapp text-green-400 mr-2"></i>Planificació setmanal</button>
@@ -95,11 +78,8 @@
                 </div>
             </div>
         </header>
-
-        <!-- VISTA 1: TAULER -->
         <main v-if="vistaActual === 'tauler'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div class="lg:col-span-1 space-y-6">
-                <!-- CALENDARI MENSUAL -->
                 <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-200">
                     <div class="flex justify-between items-center mb-4">
                         <button @click="canviarMes(-1)" class="text-gray-400 hover:text-blue-600 transition"><i class="fa-solid fa-chevron-left"></i></button>
@@ -117,8 +97,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- REGISTRE ABSÈNCIA -->
                 <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-200">
                     <h3 class="text-sm font-bold text-gray-800 border-b pb-3 mb-4">Anotar absència pel <span class="text-blue-600">{{ dataSeleccionadaFormatada }}</span></h3>
                     <div class="space-y-4">
@@ -135,8 +113,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- TAULER CENTRAL -->
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 h-full">
                     <div class="flex justify-between items-end border-b border-gray-100 pb-4 mb-5">
@@ -147,7 +123,6 @@
                         <span v-if="minutsPendentsTotals > 0" class="bg-red-50 text-red-700 text-xs font-bold px-3 py-2 rounded-lg border border-red-200 shadow-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Falta cobrir {{ minutsPendentsTotals }} min.</span>
                         <span v-else-if="llistaAbsencies.length > 0" class="bg-green-50 text-green-700 text-xs font-bold px-3 py-2 rounded-lg border border-green-200 shadow-sm"><i class="fa-solid fa-check-double mr-1"></i> Tot cobert</span>
                     </div>
-                    
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-left text-sm">
                             <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
@@ -168,7 +143,6 @@
                                             <button @click="eliminarAbsencia(abs.id)" class="text-gray-300 hover:text-red-500 ml-3 transition p-2"><i class="fa-solid fa-trash-can"></i></button>
                                         </td>
                                     </tr>
-                                    
                                     <tr v-for="(ass, idxA) in abs.assignacions" :key="idxA" class="bg-gray-50/70 border-b border-gray-50">
                                         <td colspan="3" class="p-2.5 pl-12 text-xs text-gray-600 flex items-center">
                                             <i class="fa-solid fa-arrow-turn-up fa-rotate-90 mr-3 text-gray-400"></i> 
@@ -176,7 +150,6 @@
                                         </td>
                                         <td class="p-2.5 text-right"><button @click="esborrarAssignacio(abs, idxA)" class="text-gray-400 hover:text-red-600 transition p-1"><i class="fa-solid fa-xmark"></i></button></td>
                                     </tr>
-                                    
                                     <tr v-if="assignacioEnCurs.absenciaId === abs.id" class="bg-blue-50/50 border-b border-blue-100">
                                         <td colspan="4" class="p-5 pl-12">
                                             <div class="mb-4 bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
@@ -208,8 +181,6 @@
                 </div>
             </div>
         </main>
-
-        <!-- VISTA 2: HORARIS -->
         <main v-if="vistaActual === 'horaris'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
@@ -219,8 +190,6 @@
                         <button @click="modeHorari = 'grup'" :class="modeHorari === 'grup' ? 'bg-white shadow-sm font-bold text-blue-700 rounded-lg' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-1.5 text-sm transition">Per classe</button>
                     </div>
                 </div>
-
-                <!-- MODE MESTRE -->
                 <div v-if="modeHorari === 'mestre'" class="space-y-5">
                     <div class="flex flex-wrap items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
                         <div class="flex items-center gap-2">
@@ -230,7 +199,6 @@
                                 <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id">{{ d.nom }}</option></optgroup>
                             </select>
                         </div>
-                        
                         <div v-if="mestreSeleccionatHorari" class="ml-auto flex items-center gap-2 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
                             <span class="text-xs text-yellow-800 font-bold"><i class="fa-regular fa-copy mr-1"></i> Clonar de:</span>
                             <select v-model="mestreAClonar" class="border border-yellow-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-yellow-500">
@@ -240,27 +208,21 @@
                             <button @click="clonarHorari" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm">Aplicar</button>
                         </div>
                     </div>
-
-                    <!-- EINA: PINZELL -->
                     <div v-if="mestreSeleccionatHorari" class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center gap-4">
                         <div>
                             <h4 class="font-bold text-indigo-900 flex items-center gap-2"><i class="fa-solid fa-paint-roller"></i> Mode pinzell ràpid</h4>
                             <p class="text-xs text-indigo-700 mt-1">Escriu la classe una vegada i fes clic a les caselles de la taula per omplir-les de cop.</p>
                         </div>
-                        
                         <div class="flex-1 flex flex-wrap items-center gap-3 bg-white p-2 rounded-lg border border-indigo-100">
                             <label class="flex items-center gap-2 font-bold text-sm cursor-pointer text-indigo-900 bg-indigo-100 px-3 py-2 rounded-lg">
                                 <input type="checkbox" v-model="modePinzell" class="w-4 h-4 text-indigo-600 rounded"> Activar
                             </label>
-                            
                             <input v-if="modePinzell" v-model="textPinzell" type="text" placeholder="Ex: Matemàtiques 6è A" class="border border-indigo-300 rounded-lg p-2 text-sm flex-1 font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none min-w-[150px]">
-                            
                             <label v-if="modePinzell" class="flex items-center gap-2 text-xs font-bold bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-100 transition text-gray-700 whitespace-nowrap">
                                 <input type="checkbox" v-model="comodiPinzell" class="w-4 h-4 text-green-500 rounded"> És comodí
                             </label>
                         </div>
                     </div>
-
                     <div class="taula-wrapper" v-if="mestreSeleccionatHorari">
                         <table class="w-full taula-horaris">
                             <thead><tr><th class="w-24 border-t-0 border-l-0 bg-transparent"></th><th v-for="dia in diesSetmana" :key="dia">{{ dia }}</th></tr></thead>
@@ -268,21 +230,10 @@
                                 <tr v-for="b in horariEscola" :key="b.id">
                                     <td class="font-bold text-xs bg-gray-50 text-center text-gray-600 align-middle">{{ b.nom }}</td>
                                     <td v-for="dia in diesSetmana" :key="dia" class="relative hover:bg-blue-50/50 transition p-1.5" :class="{'ring-2 ring-indigo-400 ring-inset bg-indigo-50/30': modePinzell}">
-                                        
-                                        <!-- OVERLAY PINZELL -->
                                         <div v-if="modePinzell" @click="aplicarPinzell(dia, b.id)" class="absolute inset-0 z-10 cursor-crosshair hover:bg-indigo-300/40 transition rounded"></div>
-                                        
                                         <div class="flex flex-col gap-1.5 h-full relative z-0">
-                                            <!-- Guardem localment en escriure (@input) per no perdre la dada si cliquen el botó abans de sortir -->
-                                            <textarea :value="getAssignacio(mestreSeleccionatHorari, dia, b.id).grup" 
-                                                   @input="e => updateAssignacioLocal(mestreSeleccionatHorari, dia, b.id, 'grup', e.target.value)"
-                                                   @blur="e => guardarAssignacioDB(mestreSeleccionatHorari, dia, b.id)"
-                                                   placeholder="Classe..." 
-                                                   class="w-full border border-gray-200 rounded-lg p-2 text-xs font-bold text-blue-900 bg-white shadow-sm resize-none h-16 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"></textarea>
-                                            
-                                            <button @click="toggleComodi(mestreSeleccionatHorari, dia, b.id)" 
-                                                    :class="getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible ? 'bg-green-100 text-green-800 border-green-300 shadow-inner' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'" 
-                                                    class="w-full py-1.5 text-[10px] uppercase font-bold rounded-md border transition-colors flex items-center justify-center gap-1">
+                                            <textarea :value="getAssignacio(mestreSeleccionatHorari, dia, b.id).grup" @input="e => updateAssignacioLocal(mestreSeleccionatHorari, dia, b.id, 'grup', e.target.value)" @blur="e => guardarAssignacioDB(mestreSeleccionatHorari, dia, b.id)" placeholder="Classe..." class="w-full border border-gray-200 rounded-lg p-2 text-xs font-bold text-blue-900 bg-white shadow-sm resize-none h-16 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"></textarea>
+                                            <button @click="toggleComodi(mestreSeleccionatHorari, dia, b.id)" :class="getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible ? 'bg-green-100 text-green-800 border-green-300 shadow-inner' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'" class="w-full py-1.5 text-[10px] uppercase font-bold rounded-md border transition-colors flex items-center justify-center gap-1">
                                                 <i class="fa-solid fa-hand-sparkles" v-if="getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible"></i>
                                                 {{ getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible ? 'Comodí actiu' : 'Marcar comodí' }}
                                             </button>
@@ -292,27 +243,24 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- EINA: ENTRADA TEXTUAL MANUAL -->
                     <div v-if="mestreSeleccionatHorari" class="mt-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                         <div class="flex items-start gap-4">
                             <div class="bg-gray-100 p-3 rounded-full text-gray-500"><i class="fa-solid fa-keyboard text-xl"></i></div>
                             <div class="flex-1">
                                 <h4 class="font-bold text-gray-800 text-lg">Assistent d'escriptura per teclat</h4>
                                 <p class="text-sm text-gray-600 mb-4 mt-1">Escriu o enganxa aquí les classes línia per línia i es col·locaran automàticament a la graella. Utilitza el format: <b>Dia ; Hora ; Classe</b></p>
-                                
                                 <div class="grid md:grid-cols-2 gap-6">
                                     <div>
-                                        <textarea v-model="textEntradaManual" placeholder="Dilluns ; 9:00 ; Matemàtiques 6è A&#10;Dimarts ; 11:30 ; Anglès 5è B&#10;Dimecres ; 15:00 ; Comodí" class="w-full h-32 text-sm p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono shadow-inner"></textarea>
+                                        <textarea v-model="textEntradaManual" placeholder="Dilluns ; 9:00 ; Matemàtiques 6è A\nDimarts ; 11:30 ; Anglès 5è B\nDimecres ; 15:00 ; Comodí" class="w-full h-32 text-sm p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono shadow-inner"></textarea>
                                         <button @click="processarEntradaManual" class="mt-3 bg-gray-800 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-gray-900 transition shadow-sm w-full">Processar text i col·locar classes</button>
                                     </div>
                                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-xs text-blue-800 space-y-2 font-medium">
                                         <p><i class="fa-solid fa-circle-info mr-1"></i> <b>Consells d'escriptura:</b></p>
                                         <ul class="list-disc pl-5 space-y-1 text-blue-700/80">
                                             <li>Separa els elements amb punt i coma ( <b>;</b> ).</li>
-                                            <li>L'hora no cal que sigui exacta, només cal que contingui el text de la franja (ex: escriure "9" quadrarà amb la franja "9:00 - 10:00").</li>
+                                            <li>L'hora no cal que sigui exacta, només cal que contingui el text de la franja.</li>
                                             <li>Si la paraula "comodí", "suport" o "guàrdia" apareix a la classe, s'activarà el botó verd sol.</li>
-                                            <li>Escriu el nom del grup dins de la classe (ex: "6è A") i així l'assignatura sortirà també a l'horari d'aquell grup automàticament!</li>
+                                            <li>Escriu el nom del grup dins de la classe (ex: "6è A") i l'assignatura sortirà a l'horari d'aquell grup automàticament!</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -320,8 +268,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- MODE GRUP -->
                 <div v-if="modeHorari === 'grup'" class="space-y-4">
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 inline-block mb-2">
                         <div class="flex items-center gap-3">
@@ -332,7 +278,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="taula-wrapper" v-if="grupSeleccionatHorari">
                         <table class="w-full taula-horaris mt-2">
                             <thead><tr><th class="w-24 border-t-0 border-l-0 bg-transparent"></th><th v-for="dia in diesSetmana" :key="dia">{{ dia }}</th></tr></thead>
@@ -355,8 +300,6 @@
                 </div>
             </div>
         </main>
-
-        <!-- VISTA 4: WHATSAPP -->
         <main v-if="vistaActual === 'whatsapp'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
                 <header class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-gray-100 pb-6">
@@ -369,7 +312,6 @@
                     <input v-model="whatsappSetmana" type="text" placeholder="Setmana (ex. 8-12 set)" class="w-full sm:w-48 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50"/>
                   </div>
                 </header>
-                
                 <div class="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                     <div>
                         <h4 class="font-bold text-blue-900 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-down text-lg"></i> Importar substitucions automàticament</h4>
@@ -379,14 +321,12 @@
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Absorbeix la setmana
                     </button>
                 </div>
-
                 <div class="grid md:grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
                     <div v-for="d in diesWhatsapp" :key="d.id" :class="'day-'+d.id" class="card rounded-2xl bg-white p-4 border border-gray-200 flex flex-col">
                       <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-2 mb-3">
                         <h3 class="font-bold text-gray-800 text-base">{{ d.label }} {{ d.emoji }}</h3>
                         <input type="date" v-model="d.data" @change="sincronitzarDatesWhatsapp(d)" class="rounded-lg border border-gray-300 px-2 py-1 text-xs text-gray-600 focus:ring-2 focus:ring-green-500 outline-none w-full xl:w-auto"/>
                       </div>
-                      
                       <div class="space-y-3 flex-1">
                         <div>
                             <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
@@ -401,7 +341,6 @@
                             <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-none transition" placeholder="🎉 ..."></textarea>
                         </div>
                       </div>
-                      
                       <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
                         <label class="text-xs font-bold text-gray-600 inline-flex items-center gap-2 cursor-pointer hover:text-green-600 transition">
                           <input type="checkbox" v-model="d.incloure" class="rounded text-green-500 focus:ring-green-500 w-4 h-4"> Incloure
@@ -410,40 +349,29 @@
                       </div>
                     </div>
                 </div>
-
                 <div class="bg-gray-50 rounded-2xl p-5 md:p-6 border border-gray-200 flex flex-col lg:flex-row gap-6">
                   <div class="flex-1">
                     <textarea v-model="missatgeWhatsappFinal" class="mono w-full h-full min-h-[250px] rounded-xl border border-gray-300 p-5 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-colors text-sm shadow-inner" placeholder="Clica 'Genera el missatge' per previsualitzar-lo aquí..."></textarea>
                   </div>
-                  
                   <div class="w-full lg:w-64 flex flex-col gap-3 justify-center">
                       <button @click="generarMissatgeWhatsapp" class="w-full rounded-xl px-4 py-3 bg-gray-800 text-white font-bold hover:bg-gray-900 transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-arrows-rotate"></i> Genera el missatge</button>
-                      
                       <div class="h-px bg-gray-200 my-2"></div>
-                      
                       <button @click="copiarMissatgeWhatsapp" class="w-full rounded-xl px-4 py-3 bg-green-100 text-green-800 border border-green-300 font-bold hover:bg-green-200 transition-all flex items-center justify-center gap-2">
                         <i class="fa-regular fa-copy"></i> <span>{{ textBotoCopiarWhatsapp }}</span>
                       </button>
-                      
                       <button @click="compartirWhatsapp" class="w-full rounded-xl px-4 py-3 bg-green-600 text-white font-bold hover:bg-green-700 transition-all shadow-md flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-lg"></i> Obre a WhatsApp</button>
-                      
                       <button @click="esborrarTotWhatsapp" class="w-full mt-4 rounded-xl px-4 py-2 bg-transparent text-red-500 font-bold hover:bg-red-50 transition-colors border border-transparent hover:border-red-200 text-sm">Esborra-ho tot</button>
                   </div>
                 </div>
             </div>
         </main>
 
-        <!-- VISTA 5: CONFIGURACIÓ -->
         <main v-if="vistaActual === 'configuracio'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-gray-800 tracking-tight"><i class="fa-solid fa-gear text-gray-500 mr-2"></i> Configuració de l'escola</h2>
                 <p class="text-sm text-gray-500 mt-1">Configura l'estructura del centre. Els canvis es guarden automàticament.</p>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
-                
-                <!-- 1. CATEGORIES -->
                 <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-orange-400 border border-gray-200 max-h-[420px] flex flex-col">
                     <h3 class="text-base font-bold mb-3 text-gray-800">1. Nivells i categories</h3>
                     <div class="flex gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
@@ -458,7 +386,6 @@
                     </ul>
                 </div>
 
-                <!-- 2. CLAUSTRE -->
                 <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-indigo-500 border border-gray-200 max-h-[420px] flex flex-col xl:col-span-1">
                     <h3 class="text-base font-bold mb-3 text-gray-800">2. Claustre</h3>
                     <div class="flex flex-col gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
@@ -482,13 +409,11 @@
                     </ul>
                 </div>
 
-                <!-- 3. CLASSES -->
                 <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-emerald-500 border border-gray-200 max-h-[420px] flex flex-col">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-base font-bold text-gray-800">3. Classes</h3>
                         <button @click="afegirGrupsPerDefecte" class="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300 text-[10px] px-2 py-1 rounded-md font-bold transition shadow-sm" title="Genera I3 fins 6è B"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Auto-crear</button>
                     </div>
-                    
                     <div class="flex gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
                         <input v-model="nouGrupNom" @keyup.enter="afegirGrup" type="text" placeholder="Ex: 6è A" class="flex-1 border border-gray-300 p-2 rounded-lg text-sm min-w-0 focus:ring-2 focus:ring-emerald-500 outline-none">
                         <button @click="afegirGrup" class="bg-emerald-600 text-white px-3.5 rounded-lg font-bold hover:bg-emerald-700 transition flex-shrink-0"><i class="fa-solid fa-plus"></i></button>
@@ -501,7 +426,6 @@
                     </ul>
                 </div>
                 
-                <!-- 4. BLOCS -->
                 <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-teal-500 border border-gray-200 max-h-[420px] flex flex-col">
                     <h3 class="text-base font-bold mb-3 text-gray-800">4. Franges horàries</h3>
                     <div class="flex flex-col gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
@@ -524,7 +448,6 @@
         </main>
     </div>
 </div>
-
 <script>
     const supabaseUrl = 'https://eibqxjxfhcsyzdhftmit.supabase.co';
     const supabaseKey = 'sb_publishable_ClCEaeNVMXGmcHPaI0SovQ_evESUl1o';
@@ -539,7 +462,7 @@
             const vistaActual = ref('tauler'); const modeHorari = ref('mestre');
             
             const obtenirDataAvuiString = () => {
-                const ara = new Date(); return `${ara.getFullYear()}-${String(ara.getMonth() + 1).padStart(2, '0')}-${String(ara.getDate()).padStart(2, '0')}`;
+                const ara = new Date(); return ara.getFullYear() + '-' + String(ara.getMonth() + 1).padStart(2, '0') + '-' + String(ara.getDate()).padStart(2, '0');
             };
             
             const dataSeleccionada = ref(obtenirDataAvuiString());
@@ -591,7 +514,11 @@
             });
 
             watch([whatsappCentre, whatsappSetmana, diesWhatsapp], () => {
-                const dades = { centre: whatsappCentre.value, setmana: whatsappSetmana.value, dies: diesWhatsapp.value };
+                const dades = {
+                    centre: whatsappCentre.value,
+                    setmana: whatsappSetmana.value,
+                    dies: diesWhatsapp.value
+                };
                 localStorage.setItem('gestor_whatsapp_dades', JSON.stringify(dades));
             }, { deep: true });
 
@@ -601,13 +528,17 @@
                 
                 const actualDayIndex = selectedDate.getDay(); 
                 if (actualDayIndex !== diaModificat.dayIdx) {
-                    if (confirm(`La data no és un ${diaModificat.label}. Vols ajustar-la al ${diaModificat.label} d'aquella setmana?`)) {
+                    if (confirm('La data no és un ' + diaModificat.label + '. Vols ajustar-la al ' + diaModificat.label + ' d\'aquella setmana?')) {
                         const diff = diaModificat.dayIdx - (actualDayIndex === 0 ? 7 : actualDayIndex);
                         selectedDate.setDate(selectedDate.getDate() + diff);
-                    } else { return; }
+                    } else { 
+                        return; 
+                    }
                 }
+
                 const mondayBase = new Date(selectedDate);
                 mondayBase.setDate(selectedDate.getDate() - (diaModificat.dayIdx - 1));
+
                 diesWhatsapp.value.forEach((d, idx) => {
                     const syncDate = new Date(mondayBase);
                     syncDate.setDate(mondayBase.getDate() + idx);
@@ -615,11 +546,14 @@
                 });
             };
 
-            const netejarDiaWhatsapp = (dia) => { dia.tasks = ''; dia.outings = ''; dia.extra = ''; };
+            const netejarDiaWhatsapp = (dia) => {
+                dia.tasks = ''; dia.outings = ''; dia.extra = '';
+            };
 
             const esborrarTotWhatsapp = () => {
                 if(confirm('Esborrar totes les dades del generador de Whatsapp?')) { 
-                    whatsappCentre.value = ''; whatsappSetmana.value = '';
+                    whatsappCentre.value = '';
+                    whatsappSetmana.value = '';
                     diesWhatsapp.value.forEach(d => { d.data = ''; d.tasks = ''; d.outings = ''; d.extra = ''; d.incloure = true; });
                     missatgeWhatsappFinal.value = '';
                 }
@@ -627,14 +561,14 @@
 
             const formatLine = (line, icon) => {
                 const parts = line.split(/\s*[-–—:/]\s*(.*)/);
-                return parts.length >= 2 ? `• ${icon} *${parts[0].trim()}* — ${parts[1].trim()}` : `• ${icon} ${line.trim()}`;
+                return parts.length >= 2 ? '• ' + icon + ' *' + parts[0].trim() + '* — ' + parts[1].trim() : '• ' + icon + ' ' + line.trim();
             };
 
             const generarMissatgeWhatsapp = () => {
-                let msg = `📢 *Planificació de la propera setmana*\n`;
-                if (whatsappCentre.value.trim()) msg += `🏫 ${whatsappCentre.value.trim()}\n`;
-                if (whatsappSetmana.value.trim()) msg += `📅 ${whatsappSetmana.value.trim()}\n`;
-                msg += `\n`;
+                let msg = '📢 *Planificació de la propera setmana*\n';
+                if (whatsappCentre.value.trim()) msg += '🏫 ' + whatsappCentre.value.trim() + '\n';
+                if (whatsappSetmana.value.trim()) msg += '📅 ' + whatsappSetmana.value.trim() + '\n';
+                msg += '\n';
 
                 diesWhatsapp.value.forEach(d => {
                     if (!d.incloure) return;
@@ -646,16 +580,16 @@
                         let dStr = "";
                         if(d.data) {
                             const dt = new Date(d.data + 'T00:00:00');
-                            dStr = ` _(${dt.toLocaleDateString('ca-ES', { day:'2-digit', month:'short' }).replace('.','')})_`;
+                            dStr = ' _(' + dt.toLocaleDateString('ca-ES', { day:'2-digit', month:'short' }).replace('.','') + ')_';
                         }
-                        msg += `${d.emoji} *${d.label.toUpperCase()}*${dStr}\n`;
+                        msg += d.emoji + ' *' + d.label.toUpperCase() + '*' + dStr + '\n';
                         t.forEach(l => msg += formatLine(l, '👩‍🏫') + '\n');
                         o.forEach(l => msg += formatLine(l, '🚌') + '\n');
                         e.forEach(l => msg += formatLine(l, '🎉') + '\n');
-                        msg += `\n`;
+                        msg += '\n';
                     }
                 });
-                msg += `Bon cap de setmana!`;
+                msg += 'Bon cap de setmana!';
                 missatgeWhatsappFinal.value = msg.trim();
             };
 
@@ -665,24 +599,35 @@
                     await navigator.clipboard.writeText(missatgeWhatsappFinal.value);
                     textBotoCopiarWhatsapp.value = '✅ Copiat!';
                     setTimeout(() => { textBotoCopiarWhatsapp.value = 'Copia'; }, 2000);
-                } catch(err) { alert('Error al copiar el text'); }
+                } catch(err) {
+                    alert('Error al copiar el text');
+                }
             };
 
             const compartirWhatsapp = () => {
                 if(!missatgeWhatsappFinal.value) generarMissatgeWhatsapp();
                 const text = missatgeWhatsappFinal.value;
-                if (navigator.share) { navigator.share({ text }).catch(()=>{});
-                } else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); }
+                if (navigator.share) {
+                    navigator.share({ text }).catch(()=>{});
+                } else {
+                    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+                }
             };
 
             const importarAbsenciesAWhatsapp = async () => {
-                let dataRefStr = diesWhatsapp.value[0].data; 
-                if(!dataRefStr) { alert("Si us plau, selecciona una data a la casella de 'Dilluns' del Whatsapp per saber quina setmana vols importar."); return; }
+                let dataRefStr = diesWhatsapp.value[0].data;
+                if(!dataRefStr) {
+                    alert("Si us plau, selecciona una data a la casella de 'Dilluns' del Whatsapp per saber quina setmana vols importar.");
+                    return;
+                }
                 
                 const dataInicial = new Date(dataRefStr);
+                
                 for(let i=0; i<5; i++) {
-                    const dataDia = new Date(dataInicial); dataDia.setDate(dataInicial.getDate() + i);
-                    const dataStrSql = `${dataDia.getFullYear()}-${String(dataDia.getMonth() + 1).padStart(2, '0')}-${String(dataDia.getDate()).padStart(2, '0')}`;
+                    const dataDia = new Date(dataInicial);
+                    dataDia.setDate(dataInicial.getDate() + i);
+                    const dataStrSql = dataDia.getFullYear() + '-' + String(dataDia.getMonth() + 1).padStart(2, '0') + '-' + String(dataDia.getDate()).padStart(2, '0');
+                    
                     const { data: abs } = await db.from('absencies').select('*').eq('data', dataStrSql);
                     
                     if(abs && abs.length > 0) {
@@ -690,33 +635,42 @@
                         abs.forEach(a => {
                             const d = docents.value.find(x => x.id === a.docent_id);
                             const b = horariEscola.value.find(x => x.id === a.bloc_id);
-                            const nomFranja = b ? b.nom : 'Franja desconeguda';
+                            const nomDocent = d ? d.nom : 'Desconegut';
+                            const nomFranja = b ? b.nom : 'Desconegut';
                             
                             const assignacioBase = assignacionsHorari.value.find(asig => asig.docent_id === a.docent_id && asig.dia === diesSetmana[i] && asig.bloc_id === a.bloc_id);
                             const nomAssignatura = assignacioBase && assignacioBase.grup ? assignacioBase.grup : 'Classe pendent';
                             
-                            const formatHoraClasse = `${nomFranja} a ${nomAssignatura}`;
+                            const formatHoraClasse = nomFranja + ': ' + nomAssignatura + ' (' + nomDocent + ')';
                             
                             if(a.assignacions && a.assignacions.length > 0) {
-                                a.assignacions.forEach(assig => { textSubst += `${formatHoraClasse} - (${assig.nomSubstitut})\n`; });
+                                a.assignacions.forEach(assig => {
+                                    textSubst += formatHoraClasse + ' - ' + assig.nomSubstitut + '\n';
+                                });
                             } else {
-                                textSubst += `${formatHoraClasse} - (PENDENT)\n`;
+                                textSubst += formatHoraClasse + ' - PENDENT\n';
                             }
                         });
-                        if(diesWhatsapp.value[i].tasks.trim() !== '') diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
-                        else diesWhatsapp.value[i].tasks = textSubst.trim();
+                        
+                        if(diesWhatsapp.value[i].tasks.trim() !== '') {
+                            diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
+                        } else {
+                            diesWhatsapp.value[i].tasks = textSubst.trim();
+                        }
                     }
                 }
+                
+                alert("S'han importat les absències de la setmana seleccionada.");
                 generarMissatgeWhatsapp();
-                alert("S'han importat les absències de la setmana seleccionada amb èxit.");
             };
+
 
             const nomDiaSetmanaSeleccionat = computed(() => {
                 if(!dataSeleccionada.value) return '';
                 const parts = dataSeleccionada.value.split('-'); return nomsDiesSetmana[new Date(parts[0], parts[1] - 1, parts[2]).getDay()];
             });
             const dataSeleccionadaFormatada = computed(() => {
-                if(!dataSeleccionada.value) return ''; const parts = dataSeleccionada.value.split('-'); return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                if(!dataSeleccionada.value) return ''; const parts = dataSeleccionada.value.split('-'); return parts[2] + '/' + parts[1] + '/' + parts[0];
             });
             const nomMesActual = computed(() => {
                 const mesos = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'];
@@ -728,7 +682,7 @@
             const diesDelMes = computed(() => {
                 const dies = []; const darrerDia = new Date(anyActual.value, mesActual.value + 1, 0).getDate(); const avuiStr = obtenirDataAvuiString();
                 for(let i = 1; i <= darrerDia; i++) {
-                    const dataStr = `${anyActual.value}-${String(mesActual.value + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                    const dataStr = anyActual.value + '-' + String(mesActual.value + 1).padStart(2, '0') + '-' + String(i).padStart(2, '0');
                     dies.push({ numero: i, data: dataStr, esAvui: dataStr === avuiStr, teAbsencies: absenciesMes.value.some(a => a.data === dataStr) });
                 }
                 return dies;
@@ -758,17 +712,20 @@
                 if(resDocents.data) docents.value = resDocents.data; if(resBlocs.data) horariEscola.value = resBlocs.data;
                 if(resAsig.data) assignacionsHorari.value = resAsig.data; if(resGrups.data) grupsTots.value = resGrups.data;
                 
-                if(resConfig.data && resConfig.data.length > 0) { categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
-                } else { categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI']; }
+                if(resConfig.data && resConfig.data.length > 0) {
+                    categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
+                } else {
+                    categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI'];
+                }
                 if(categoriesDocents.value.length > 0) novaCategoriaMestre.value = categoriesDocents.value[0];
 
                 await carregarAbsenciesMes(); await carregarAbsenciesDia();
             };
 
             const carregarAbsenciesMes = async () => {
-                const inici = `${anyActual.value}-${String(mesActual.value + 1).padStart(2, '0')}-01`;
+                const inici = anyActual.value + '-' + String(mesActual.value + 1).padStart(2, '0') + '-01';
                 const darrerDia = new Date(anyActual.value, mesActual.value + 1, 0).getDate();
-                const fi = `${anyActual.value}-${String(mesActual.value + 1).padStart(2, '0')}-${String(darrerDia).padStart(2, '0')}`;
+                const fi = anyActual.value + '-' + String(mesActual.value + 1).padStart(2, '0') + '-' + String(darrerDia).padStart(2, '0');
                 const { data } = await db.from('absencies').select('data').gte('data', inici).lte('data', fi);
                 if (data) absenciesMes.value = data;
             };
@@ -795,23 +752,31 @@
             };
             const tancarSessio = async () => { await db.auth.signOut(); usuariAutenticat.value = false; };
 
-            const guardarCategoriesDB = async () => { await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) }); };
+            const guardarCategoriesDB = async () => {
+                await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) });
+            };
             const afegirCategoria = async () => {
                 const nova = novaCategoria.value.trim();
-                if(nova && !categoriesDocents.value.includes(nova)) { categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB(); }
+                if(nova && !categoriesDocents.value.includes(nova)) {
+                    categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB();
+                }
             };
-            const esborrarCategoria = async (idx) => { categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB(); };
+            const esborrarCategoria = async (idx) => {
+                categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB();
+            };
 
             const afegirGrupsPerDefecte = async () => {
                 const llistaDemanada = ['I3', 'I3 A', 'I3 B', 'I4', 'I4 A', 'I4 B', 'I5', 'I5 A', 'I5 B', '1r', '1r A', '1r B', '2n', '2n A', '2n B', '3r', '3r A', '3r B', '4t', '4t A', '4t B', '5è', '5è A', '5è B', '6è', '6è A', '6è B'];
-                let ordreAct = grupsTots.value.length + 1; let afegits = 0;
+                let ordreAct = grupsTots.value.length + 1;
+                let afegits = 0;
                 for(let nomGrup of llistaDemanada) {
                     if(!grupsTots.value.find(g => g.nom === nomGrup)) {
                         const { data } = await db.from('grups').insert({ nom: nomGrup, ordre: ordreAct++ }).select();
                         if(data) { grupsTots.value.push(data[0]); afegits++; }
                     }
                 }
-                if(afegits > 0) alert(`✅ S'han afegit ${afegits} grups nous automàticament.`); else alert(`Tots els grups per defecte ja estaven creats.`);
+                if(afegits > 0) alert("✅ S'han afegit " + afegits + " grups nous automàticament.");
+                else alert("Tots els grups per defecte ja estaven creats.");
             };
 
             const getAssignacio = (docentId, dia, blocId) => {
@@ -819,7 +784,6 @@
                 return as ? as : { grup: '', materia: '', disponible: false };
             };
 
-            // Canvis Reactius instantanis (Sense esperar l'escriptura de DB)
             const updateAssignacioLocal = (docentId, dia, blocId, camp, valor) => {
                 let asigIndex = assignacionsHorari.value.findIndex(a => a.docent_id === docentId && a.dia === dia && a.bloc_id === blocId);
                 if (asigIndex !== -1) {
@@ -891,7 +855,7 @@
                 }
                 
                 if(inserits > 0) {
-                    alert(`✅ S'han analitzat i col·locat ${inserits} franges manualment.`);
+                    alert("✅ S'han analitzat i col·locat " + inserits + " franges manualment.");
                     textEntradaManual.value = '';
                 } else {
                     alert("⚠️ El sistema no ha entès les línies. Revisa que el format sigui exacte: Dia ; Hora ; Classe");
