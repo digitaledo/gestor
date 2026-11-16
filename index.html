@@ -24,8 +24,8 @@
         .dia-calendari:hover { background-color: #dbeafe; }
         .dia-seleccionat { background-color: #3b82f6 !important; color: white !important; font-weight: bold; border-radius: 8px; }
         .punt-absencia { width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-top: 2px; }
-        .card { box-shadow: 0 10px 25px -10px rgba(0,0,0,.15); transition: border-color 0.2s; }
-        .card:focus-within { border-color: #58ACA6; }
+        .card { box-shadow: 0 4px 15px -5px rgba(0,0,0,.1); transition: border-color 0.2s; }
+        .card:focus-within { border-color: #3b82f6; }
         .mono { font-variant-ligatures: none; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
         .day-dl { border-left: 4px solid #3b82f6; }
         .day-dm { border-left: 4px solid #10b981; }
@@ -44,6 +44,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
 <div id="app" v-cloak>
+    <datalist id="llista-grups"><option v-for="g in llistaGrupsDinamica" :key="g" :value="g"></option></datalist>
     <div v-if="!usuariAutenticat" class="min-h-screen flex items-center justify-center bg-slate-800">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             <div class="text-center mb-6">
@@ -147,7 +148,7 @@
                                             <i class="fa-solid fa-arrow-turn-up fa-rotate-90 mr-3 text-gray-400"></i> 
                                             {{ ass.durada }}' assignats a <span class="font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded ml-1.5 shadow-sm">{{ ass.nomSubstitut }}</span>
                                         </td>
-                                        <td class="p-2.5 text-right"><button @click="esborrarAssignacio(abs, idxA)" class="text-gray-400 hover:text-red-600 transition p-1"><i class="fa-solid fa-xmark"></i></button></td>
+                                        <td class="p-2.5 text-right"><button @click="esborrarAssignacio(abs, idxA)" class="text-red-400 hover:text-red-600 transition p-1"><i class="fa-solid fa-xmark"></i></button></td>
                                     </tr>
                                     <tr v-if="assignacioEnCurs.absenciaId === abs.id" class="bg-blue-50/50 border-b border-blue-100">
                                         <td colspan="4" class="p-5 pl-12">
@@ -301,7 +302,7 @@
         </main>
         <main v-if="vistaActual === 'whatsapp'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
-                <header class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4 border-b border-gray-100 pb-6">
+                <header class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-gray-100 pb-6">
                   <div>
                     <h2 class="text-2xl font-bold tracking-tight text-gray-800"><i class="fa-brands fa-whatsapp text-green-500 mr-2 text-3xl align-middle"></i> Generador de WhatsApp</h2>
                     <p class="text-gray-500 text-sm mt-1">Crea el missatge de planificació setmanal per enviar a la resta del claustre.</p>
@@ -311,7 +312,7 @@
                     <input v-model="whatsappSetmana" type="text" placeholder="Setmana (ex. 8-12 set)" class="w-full sm:w-48 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50"/>
                   </div>
                 </header>
-                <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                <div class="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                     <div>
                         <h4 class="font-bold text-blue-900 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-down text-lg"></i> Importar substitucions automàticament</h4>
                         <p class="text-xs text-blue-700 mt-1 max-w-2xl">Carrega totes les substitucions que estiguin anotades al <b>Tauler diari</b> per la setmana que tinguis seleccionada a sota. Generarà el text net assignatura per assignatura.</p>
@@ -376,7 +377,6 @@
                       </div>
                     </div>
                 </div>
-
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-200 flex flex-col lg:flex-row gap-8">
                   <div class="flex-1">
                     <textarea v-model="missatgeWhatsappFinal" class="mono w-full h-full min-h-[300px] rounded-xl border border-gray-300 p-5 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-colors text-sm shadow-inner" placeholder="Clica 'Genera el missatge' per previsualitzar-lo aquí..."></textarea>
@@ -551,8 +551,11 @@
             };
 
             const formatLine = (line, icon) => {
-                const parts = line.split(/\s*[-–—:/]\s*(.*)/);
-                return parts.length >= 2 ? '• ' + icon + ' *' + parts[0].trim() + '* — ' + parts[1].trim() : '• ' + icon + ' ' + line.trim();
+                let text = line.trim();
+                if (text.startsWith('👩‍🏫') || text.startsWith('🚌') || text.startsWith('🎉') || text.startsWith('•')) {
+                    return text;
+                }
+                return '• ' + icon + ' ' + text;
             };
 
             const generarMissatgeWhatsapp = () => {
@@ -613,19 +616,15 @@
                     if(abs && abs.length > 0) {
                         let textSubst = "";
                         abs.forEach(a => {
-                            const d = docents.value.find(x => x.id === a.docent_id);
                             const b = horariEscola.value.find(x => x.id === a.bloc_id);
-                            const nomDocent = d ? d.nom : 'Desconegut';
                             const nomFranja = b ? b.nom : 'Desconegut';
                             const assignacioBase = assignacionsHorari.value.find(asig => asig.docent_id === a.docent_id && asig.dia === diesSetmana[i] && asig.bloc_id === a.bloc_id);
                             const nomAssignatura = assignacioBase && assignacioBase.grup ? assignacioBase.grup : 'Classe pendent';
                             
-                            const formatHoraClasse = nomFranja + ' - ' + nomAssignatura + ' (' + nomDocent + ')';
-                            
                             if(a.assignacions && a.assignacions.length > 0) {
-                                a.assignacions.forEach(assig => { textSubst += formatHoraClasse + ' - Cobreix: ' + assig.nomSubstitut + '\n'; });
+                                a.assignacions.forEach(assig => { textSubst += '👩‍🏫 ' + nomFranja + ' - ' + nomAssignatura + ' (' + assig.nomSubstitut + ')\n'; });
                             } else {
-                                textSubst += formatHoraClasse + ' - PENDENT\n';
+                                textSubst += '👩‍🏫 ' + nomFranja + ' - ' + nomAssignatura + ' (PENDENT)\n';
                             }
                         });
                         if(diesWhatsapp.value[i].tasks.trim() !== '') diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
@@ -683,8 +682,11 @@
                 if(resDocents.data) docents.value = resDocents.data; if(resBlocs.data) horariEscola.value = resBlocs.data;
                 if(resAsig.data) assignacionsHorari.value = resAsig.data; if(resGrups.data) grupsTots.value = resGrups.data;
                 
-                if(resConfig.data && resConfig.data.length > 0) { categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
-                } else { categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI']; }
+                if(resConfig.data && resConfig.data.length > 0) {
+                    categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
+                } else {
+                    categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI'];
+                }
                 if(categoriesDocents.value.length > 0) novaCategoriaMestre.value = categoriesDocents.value[0];
 
                 await carregarAbsenciesMes(); await carregarAbsenciesDia();
@@ -720,23 +722,31 @@
             };
             const tancarSessio = async () => { await db.auth.signOut(); usuariAutenticat.value = false; };
 
-            const guardarCategoriesDB = async () => { await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) }); };
+            const guardarCategoriesDB = async () => {
+                await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) });
+            };
             const afegirCategoria = async () => {
                 const nova = novaCategoria.value.trim();
-                if(nova && !categoriesDocents.value.includes(nova)) { categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB(); }
+                if(nova && !categoriesDocents.value.includes(nova)) {
+                    categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB();
+                }
             };
-            const esborrarCategoria = async (idx) => { categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB(); };
+            const esborrarCategoria = async (idx) => {
+                categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB();
+            };
 
             const afegirGrupsPerDefecte = async () => {
                 const llistaDemanada = ['I3', 'I3 A', 'I3 B', 'I4', 'I4 A', 'I4 B', 'I5', 'I5 A', 'I5 B', '1r', '1r A', '1r B', '2n', '2n A', '2n B', '3r', '3r A', '3r B', '4t', '4t A', '4t B', '5è', '5è A', '5è B', '6è', '6è A', '6è B'];
-                let ordreAct = grupsTots.value.length + 1; let afegits = 0;
+                let ordreAct = grupsTots.value.length + 1;
+                let afegits = 0;
                 for(let nomGrup of llistaDemanada) {
                     if(!grupsTots.value.find(g => g.nom === nomGrup)) {
                         const { data } = await db.from('grups').insert({ nom: nomGrup, ordre: ordreAct++ }).select();
                         if(data) { grupsTots.value.push(data[0]); afegits++; }
                     }
                 }
-                if(afegits > 0) alert("✅ S'han afegit " + afegits + " grups nous automàticament."); else alert("Tots els grups per defecte ja estaven creats.");
+                if(afegits > 0) alert("✅ S'han afegit " + afegits + " grups nous automàticament.");
+                else alert("Tots els grups per defecte ja estaven creats.");
             };
 
             const getAssignacio = (docentId, dia, blocId) => {
@@ -750,7 +760,8 @@
                     assignacionsHorari.value[asigIndex][camp] = valor;
                 } else {
                     let tempPayload = { docent_id: docentId, dia: dia, bloc_id: blocId, grup: '', materia: '', disponible: false, id: 'temp_' + Date.now() };
-                    tempPayload[camp] = valor; assignacionsHorari.value.push(tempPayload);
+                    tempPayload[camp] = valor;
+                    assignacionsHorari.value.push(tempPayload);
                 }
             };
 
@@ -760,7 +771,9 @@
                 let actualitzat = assignacionsHorari.value[asigIndex];
                 
                 if (actualitzat.grup.trim() === '' && !actualitzat.disponible) {
-                    if (!String(actualitzat.id).startsWith('temp_')) { await db.from('assignacions').delete().eq('id', actualitzat.id); }
+                    if (!String(actualitzat.id).startsWith('temp_')) {
+                        await db.from('assignacions').delete().eq('id', actualitzat.id);
+                    }
                     assignacionsHorari.value.splice(asigIndex, 1);
                 } else {
                     if (String(actualitzat.id).startsWith('temp_')) {
@@ -839,6 +852,7 @@
                     const search = grupId.toLowerCase();
                     const idx = text.indexOf(search);
                     if (idx === -1) return false;
+                    
                     const charSeguent = text[idx + search.length];
                     if (charSeguent && /[a-z0-9àèéíòóúïü]/i.test(charSeguent)) return false;
                     return true;
@@ -945,6 +959,11 @@
             }
         }
     });
+
+    app.config.errorHandler = (err, instance, info) => {
+        console.error(err);
+        document.body.innerHTML = '<div style="max-width:600px; margin:50px auto; background:#fee2e2; border:2px solid #ef4444; padding:20px; border-radius:8px; color:#991b1b; font-family:sans-serif;"><h2 style="font-size:1.5rem; font-weight:bold; margin-bottom:10px;">🚨 Error intern de Vue</h2><div style="background:white; padding:10px; margin-top:10px; font-family:monospace; border:1px solid #fca5a5;">' + err.message + '</div><p style="margin-top:10px; font-size:0.8rem;">Info: ' + info + '</p></div>';
+    };
 
     app.mount('#app');
 </script>
