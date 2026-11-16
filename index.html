@@ -22,21 +22,33 @@
         .tab-activa { background-color: #1e3a8a; border-bottom: 3px solid #60a5fa; color: white; }
         .tab-inactiva { background-color: transparent; color: #bfdbfe; opacity: 0.9; }
         .tab-inactiva:hover { background-color: #1e40af; opacity: 1; }
+        
+        .taula-wrapper { width: 100%; overflow-x: auto; padding-bottom: 0.5rem; }
+        .taula-horaris { min-width: 800px; border-collapse: separate; border-spacing: 0; }
         .taula-horaris th, .taula-horaris td { border: 1px solid #e5e7eb; padding: 6px; text-align: left; vertical-align: top; }
         .taula-horaris th { background-color: #f9fafb; font-size: 0.85rem; text-transform: uppercase; color: #4b5563; text-align: center; }
+        
         .dia-calendari { cursor: pointer; transition: all 0.2s; }
         .dia-calendari:hover { background-color: #dbeafe; }
         .dia-seleccionat { background-color: #3b82f6 !important; color: white !important; font-weight: bold; border-radius: 8px; }
         .punt-absencia { width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-top: 2px; }
         
-        .card { box-shadow: 0 10px 25px -10px rgba(0,0,0,.15); transition: border-color 0.2s; }
-        .card:focus-within { border-color: #58ACA6; }
+        /* Estils adaptats per al WhatsApp */
+        .card { box-shadow: 0 4px 15px -5px rgba(0,0,0,.1); transition: border-color 0.2s; }
+        .card:focus-within { border-color: #3b82f6; }
         .mono { font-variant-ligatures: none; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        
         .day-dl { border-left: 4px solid #3b82f6; }
         .day-dm { border-left: 4px solid #10b981; }
         .day-dx { border-left: 4px solid #f59e0b; }
         .day-dj { border-left: 4px solid #facc15; }
         .day-dv { border-left: 4px solid #ec4899; }
+        
+        /* Scrollbars elegants per les caixes de configuració */
+        .scroll-elegant::-webkit-scrollbar { width: 6px; }
+        .scroll-elegant::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .scroll-elegant::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .scroll-elegant::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -50,382 +62,464 @@
     <datalist id="llista-grups"><option v-for="g in llistaGrupsDinamica" :key="g" :value="g"></option></datalist>
 
     <div v-if="!usuariAutenticat" class="min-h-screen flex items-center justify-center bg-slate-800">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             <div class="text-center mb-6">
-                <i class="fa-solid fa-graduation-cap text-4xl text-blue-600 mb-2"></i>
+                <i class="fa-solid fa-graduation-cap text-5xl text-blue-600 mb-3"></i>
                 <h2 class="text-2xl font-bold text-gray-800">Escola Eugeni d'Ors</h2>
                 <p class="text-gray-500 text-sm mt-1">Gestió d'horaris i substitucions</p>
             </div>
             <div class="space-y-4">
-                <input v-model="correu" type="email" class="w-full px-3 py-2 border rounded focus:ring-blue-500" placeholder="Correu electrònic">
-                <input v-model="contrasenya" type="password" @keyup.enter="iniciarSessio" class="w-full px-3 py-2 border rounded focus:ring-blue-500" placeholder="Contrasenya">
-                <p v-if="errorLogin" class="text-red-500 text-sm font-bold text-center">{{ errorLogin }}</p>
-                <button @click="iniciarSessio" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">Entrar</button>
+                <input v-model="correu" type="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Correu electrònic">
+                <input v-model="contrasenya" type="password" @keyup.enter="iniciarSessio" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Contrasenya">
+                <p v-if="errorLogin" class="text-red-500 text-sm font-bold text-center bg-red-50 p-2 rounded-lg">{{ errorLogin }}</p>
+                <button @click="iniciarSessio" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-md active:scale-95">Entrar al gestor</button>
             </div>
         </div>
     </div>
 
     <div v-else class="min-h-screen flex flex-col">
-        <header class="bg-blue-700 shadow">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
-                <div class="flex justify-between items-center mb-4 text-white">
+        <header class="bg-blue-800 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+                <div class="flex justify-between items-center mb-5 text-white">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-calendar-days text-2xl"></i>
-                        <div><h1 class="text-xl font-bold">Escola Eugeni d'Ors</h1></div>
+                        <i class="fa-solid fa-calendar-days text-2xl text-blue-200"></i>
+                        <div><h1 class="text-xl font-bold tracking-tight">Escola Eugeni d'Ors</h1></div>
                     </div>
-                    <button @click="tancarSessio" class="text-sm bg-red-600 px-3 py-1 rounded hover:bg-red-500"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sortir</button>
+                    <button @click="tancarSessio" class="text-sm bg-blue-900/50 border border-blue-700 px-4 py-1.5 rounded-lg hover:bg-red-500 hover:border-red-500 transition shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Sortir</button>
                 </div>
-                <div class="flex space-x-1 overflow-x-auto pb-1">
-                    <button @click="vistaActual = 'tauler'" :class="vistaActual === 'tauler' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-2.5 font-bold text-sm rounded-t-lg transition whitespace-nowrap">Tauler</button>
-                    <button @click="vistaActual = 'horaris'" :class="vistaActual === 'horaris' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-2.5 font-bold text-sm rounded-t-lg transition whitespace-nowrap">Gestió d'horaris</button>
-                    <button @click="vistaActual = 'whatsapp'" :class="vistaActual === 'whatsapp' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-2.5 font-bold text-sm rounded-t-lg transition whitespace-nowrap">Whatsapp planificació</button>
-                    <button @click="vistaActual = 'configuracio'" :class="vistaActual === 'configuracio' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-2.5 font-bold text-sm rounded-t-lg transition whitespace-nowrap">Configuració</button>
+                <div class="flex space-x-1 overflow-x-auto pb-0 hide-scrollbar">
+                    <button @click="vistaActual = 'tauler'" :class="vistaActual === 'tauler' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-3 font-bold text-sm rounded-t-xl transition whitespace-nowrap"><i class="fa-solid fa-table-list mr-2"></i>Tauler diari</button>
+                    <button @click="vistaActual = 'horaris'" :class="vistaActual === 'horaris' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-3 font-bold text-sm rounded-t-xl transition whitespace-nowrap"><i class="fa-solid fa-calendar-week mr-2"></i>Gestió d'horaris</button>
+                    <button @click="vistaActual = 'whatsapp'" :class="vistaActual === 'whatsapp' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-3 font-bold text-sm rounded-t-xl transition whitespace-nowrap"><i class="fa-brands fa-whatsapp text-green-400 mr-2"></i>Planificació setmanal</button>
+                    <button @click="vistaActual = 'configuracio'" :class="vistaActual === 'configuracio' ? 'tab-activa' : 'tab-inactiva'" class="px-5 py-3 font-bold text-sm rounded-t-xl transition whitespace-nowrap"><i class="fa-solid fa-gear mr-2"></i>Configuració</button>
                 </div>
             </div>
         </header>
 
+        <!-- VISTA 1: TAULER -->
         <main v-if="vistaActual === 'tauler'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white rounded-lg shadow p-5 border-t-4 border-indigo-600">
+                <!-- CALENDARI MENSUAL -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-200">
                     <div class="flex justify-between items-center mb-4">
-                        <button @click="canviarMes(-1)" class="text-gray-500 hover:text-indigo-600"><i class="fa-solid fa-chevron-left"></i></button>
-                        <h3 class="text-sm font-bold uppercase text-indigo-900">{{ nomMesActual }} {{ anyActual }}</h3>
-                        <button @click="canviarMes(1)" class="text-gray-500 hover:text-indigo-600"><i class="fa-solid fa-chevron-right"></i></button>
+                        <button @click="canviarMes(-1)" class="text-gray-400 hover:text-blue-600 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                        <h3 class="text-sm font-bold uppercase text-gray-700 tracking-wider">{{ nomMesActual }} {{ anyActual }}</h3>
+                        <button @click="canviarMes(1)" class="text-gray-400 hover:text-blue-600 transition"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
                     <div class="grid grid-cols-7 gap-1 text-center text-xs mb-2 text-gray-400 font-bold">
                         <div>Dl</div><div>Dt</div><div>Dc</div><div>Dj</div><div>Dv</div><div>Ds</div><div>Dg</div>
                     </div>
                     <div class="grid grid-cols-7 gap-1 text-center text-sm">
                         <div v-for="buit in espaisBuitsCalendari" :key="'b'+buit"></div>
-                        <div v-for="dia in diesDelMes" :key="dia.data" @click="seleccionarData(dia.data)" :class="{'dia-seleccionat': dia.data === dataSeleccionada}" class="dia-calendari p-1.5 rounded flex flex-col items-center justify-center h-10 border border-transparent hover:border-gray-200">
-                            <span :class="{'text-indigo-600 font-bold': dia.esAvui}">{{ dia.numero }}</span>
+                        <div v-for="dia in diesDelMes" :key="dia.data" @click="seleccionarData(dia.data)" :class="{'dia-seleccionat shadow-md': dia.data === dataSeleccionada}" class="dia-calendari p-1.5 rounded-lg flex flex-col items-center justify-center h-10 border border-transparent hover:border-gray-200 text-gray-700">
+                            <span :class="{'text-blue-600 font-black': dia.esAvui}">{{ dia.numero }}</span>
                             <span v-if="dia.teAbsencies" class="punt-absencia"></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow p-5 border-t-4 border-blue-600">
-                    <h3 class="text-base font-semibold border-b pb-2 mb-4">Registrar absència pel <span class="text-blue-600">{{ dataSeleccionadaFormatada }}</span></h3>
+                <!-- REGISTRE ABSÈNCIA -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-800 border-b pb-3 mb-4">Anotar absència pel <span class="text-blue-600">{{ dataSeleccionadaFormatada }}</span></h3>
                     <div class="space-y-4">
-                        <select v-model="novaAbsencia.docent_id" class="w-full border p-2 rounded text-sm font-medium">
-                            <option value="" disabled>Mestre absent...</option>
+                        <select v-model="novaAbsencia.docent_id" class="w-full border border-gray-300 p-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50">
+                            <option value="" disabled>Selecciona el docent absent...</option>
                             <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id">{{ d.nom }}</option></optgroup>
                         </select>
-                        <div class="space-y-2 border p-2 rounded bg-gray-50 max-h-48 overflow-y-auto">
-                            <label v-for="b in horariEscola" :key="b.id" class="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-100 p-1 rounded">
-                                <input type="checkbox" :value="b" v-model="novaAbsencia.franges" class="rounded text-blue-600 w-4 h-4">{{ b.nom }}
+                        <div class="space-y-2 border border-gray-200 p-3 rounded-xl bg-gray-50 max-h-48 overflow-y-auto scroll-elegant">
+                            <label v-for="b in horariEscola" :key="b.id" class="flex items-center gap-3 text-sm cursor-pointer hover:bg-gray-200/50 p-1.5 rounded transition">
+                                <input type="checkbox" :value="b" v-model="novaAbsencia.franges" class="rounded text-blue-600 w-4 h-4 focus:ring-blue-500">{{ b.nom }}
                             </label>
                         </div>
-                        <button @click="registrarAbsencia" class="w-full bg-blue-100 text-blue-700 font-bold py-2 rounded hover:bg-blue-200 transition">Afegir al tauler</button>
+                        <button @click="registrarAbsencia" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition shadow-sm active:scale-95">Afegir al tauler</button>
                     </div>
                 </div>
             </div>
 
+            <!-- TAULER CENTRAL -->
             <div class="lg:col-span-3">
-                <div class="bg-white rounded-lg shadow p-5">
-                    <div class="flex justify-between items-center border-b pb-2 mb-4">
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 h-full">
+                    <div class="flex justify-between items-end border-b border-gray-100 pb-4 mb-5">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-800">Tauler del dia</h3>
-                            <p class="text-sm text-gray-500">{{ dataSeleccionadaFormatada }} ({{ nomDiaSetmanaSeleccionat }})</p>
+                            <h3 class="text-2xl font-bold text-gray-800 tracking-tight">Tauler de substitucions</h3>
+                            <p class="text-sm text-gray-500 mt-1"><i class="fa-regular fa-calendar text-gray-400 mr-1"></i> {{ nomDiaSetmanaSeleccionat }}, {{ dataSeleccionadaFormatada }}</p>
                         </div>
-                        <span v-if="minutsPendentsTotals > 0" class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1.5 rounded-full border border-red-200 shadow-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ minutsPendentsTotals }} minuts sense cobrir</span>
-                        <span v-else-if="llistaAbsencies.length > 0" class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full border border-green-200 shadow-sm"><i class="fa-solid fa-check mr-1"></i> Tot cobert</span>
+                        <span v-if="minutsPendentsTotals > 0" class="bg-red-50 text-red-700 text-xs font-bold px-3 py-2 rounded-lg border border-red-200 shadow-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Falta cobrir {{ minutsPendentsTotals }} min.</span>
+                        <span v-else-if="llistaAbsencies.length > 0" class="bg-green-50 text-green-700 text-xs font-bold px-3 py-2 rounded-lg border border-green-200 shadow-sm"><i class="fa-solid fa-check-double mr-1"></i> Tot cobert</span>
                     </div>
                     
-                    <table class="min-w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs border-b">
-                            <tr><th class="p-3">Mestre absent</th><th class="p-3">Franja</th><th class="p-3">Estat</th><th class="p-3"></th></tr>
-                        </thead>
-                        <tbody>
-                            <tr v-if="llistaAbsencies.length === 0"><td colspan="4" class="p-10 text-center text-gray-400">Cap absència registrada per aquest dia.</td></tr>
-                            <template v-for="abs in llistaAbsencies" :key="abs.id">
-                                <tr class="border-b bg-white hover:bg-gray-50 transition">
-                                    <td class="p-3 font-bold text-gray-800">{{ obtenirNomDocent(abs.docent_id) }}</td>
-                                    <td class="p-3 text-gray-600"><i class="fa-regular fa-clock text-gray-400 mr-1"></i> {{ obtenirNomBloc(abs.bloc_id) }}</td>
-                                    <td class="p-3">
-                                        <span v-if="abs.minuts_pendents > 0" class="text-red-600 font-bold">Falten {{ abs.minuts_pendents }}'</span>
-                                        <span v-else class="text-green-600 font-bold">Cobert completament</span>
-                                    </td>
-                                    <td class="p-3 text-right">
-                                        <button v-if="abs.minuts_pendents > 0" @click="prepararNovaAssignacio(abs)" class="text-blue-600 text-xs font-bold border border-blue-200 rounded px-3 py-1.5 bg-white hover:bg-blue-50 shadow-sm transition">+ Cobrir</button>
-                                        <button @click="eliminarAbsencia(abs.id)" class="text-gray-300 hover:text-red-500 ml-3 transition"><i class="fa-solid fa-trash-can"></i></button>
-                                    </td>
-                                </tr>
-                                <tr v-for="(ass, idxA) in abs.assignacions" :key="idxA" class="bg-gray-50/50 border-b border-gray-100">
-                                    <td colspan="3" class="p-2 pl-12 text-xs text-gray-600"><i class="fa-solid fa-turn-up fa-rotate-90 mr-2 text-gray-400"></i> {{ ass.durada }}' assignats a <span class="font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded ml-1">{{ ass.nomSubstitut }}</span></td>
-                                    <td class="p-2 text-right"><button @click="esborrarAssignacio(abs, idxA)" class="text-red-400 hover:text-red-600 transition p-1"><i class="fa-solid fa-xmark"></i></button></td>
-                                </tr>
-                                <tr v-if="assignacioEnCurs.absenciaId === abs.id" class="bg-blue-50/80 border-b border-blue-200">
-                                    <td colspan="4" class="p-4 pl-12">
-                                        <div class="mb-3 bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
-                                            <span class="text-xs font-bold text-green-700 block mb-2"><i class="fa-solid fa-hand-sparkles"></i> Mestres disponibles ara mateix:</span>
-                                            <div v-if="mestresDisponiblesDiaActual(abs.bloc_id).length === 0" class="text-xs text-gray-400 italic">Cap comodí disponible. Caldrà triar del claustre general.</div>
-                                            <div class="flex flex-wrap gap-2">
-                                                <button v-for="disp in mestresDisponiblesDiaActual(abs.bloc_id)" :key="disp.id" @click="assignacioEnCurs.substitut = docents.find(d => d.id === disp.docent_id)" class="bg-green-50 border border-green-200 text-green-800 text-xs px-2 py-1 rounded hover:bg-green-100 transition shadow-sm">
-                                                    <b>{{ obtenirNomDocent(disp.docent_id) }}</b>
-                                                </button>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                                <tr><th class="p-3 rounded-tl-lg">Docent absent</th><th class="p-3">Franja</th><th class="p-3">Estat</th><th class="p-3 rounded-tr-lg"></th></tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="llistaAbsencies.length === 0"><td colspan="4" class="p-16 text-center text-gray-400"><i class="fa-solid fa-mug-hot text-4xl mb-4 block text-gray-300"></i> No hi ha cap absència registrada per a aquest dia.</td></tr>
+                                <template v-for="abs in llistaAbsencies" :key="abs.id">
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
+                                        <td class="p-3 font-bold text-gray-800">{{ obtenirNomDocent(abs.docent_id) }}</td>
+                                        <td class="p-3 text-gray-600 font-medium"><i class="fa-regular fa-clock text-gray-400 mr-1.5"></i>{{ obtenirNomBloc(abs.bloc_id) }}</td>
+                                        <td class="p-3">
+                                            <span v-if="abs.minuts_pendents > 0" class="text-red-600 font-bold bg-red-50 px-2 py-1 rounded">Falten {{ abs.minuts_pendents }}'</span>
+                                            <span v-else class="text-green-600 font-bold bg-green-50 px-2 py-1 rounded">Complet</span>
+                                        </td>
+                                        <td class="p-3 text-right">
+                                            <button v-if="abs.minuts_pendents > 0" @click="prepararNovaAssignacio(abs)" class="text-blue-600 text-xs font-bold border border-blue-200 rounded-lg px-3 py-1.5 bg-white hover:bg-blue-50 hover:border-blue-300 transition shadow-sm">+ Assignar</button>
+                                            <button @click="eliminarAbsencia(abs.id)" class="text-gray-300 hover:text-red-500 ml-3 transition p-2"><i class="fa-solid fa-trash-can"></i></button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <tr v-for="(ass, idxA) in abs.assignacions" :key="idxA" class="bg-gray-50/70 border-b border-gray-50">
+                                        <td colspan="3" class="p-2.5 pl-12 text-xs text-gray-600 flex items-center">
+                                            <i class="fa-solid fa-arrow-turn-up fa-rotate-90 mr-3 text-gray-400"></i> 
+                                            {{ ass.durada }}' assignats a <span class="font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded ml-1.5 shadow-sm">{{ ass.nomSubstitut }}</span>
+                                        </td>
+                                        <td class="p-2.5 text-right"><button @click="esborrarAssignacio(abs, idxA)" class="text-gray-400 hover:text-red-600 transition p-1"><i class="fa-solid fa-xmark"></i></button></td>
+                                    </tr>
+                                    
+                                    <tr v-if="assignacioEnCurs.absenciaId === abs.id" class="bg-blue-50/50 border-b border-blue-100">
+                                        <td colspan="4" class="p-5 pl-12">
+                                            <div class="mb-4 bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
+                                                <span class="text-xs font-bold text-blue-800 block mb-2"><i class="fa-solid fa-hand-sparkles mr-1"></i> Docents disponibles amb comodí en aquesta franja:</span>
+                                                <div v-if="mestresDisponiblesDiaActual(abs.bloc_id).length === 0" class="text-xs text-gray-400 italic py-1">Cap comodí lliure detectat a l'horari. Cal triar manualment del claustre.</div>
+                                                <div class="flex flex-wrap gap-2">
+                                                    <button v-for="disp in mestresDisponiblesDiaActual(abs.bloc_id)" :key="disp.id" @click="assignacioEnCurs.substitut = docents.find(d => d.id === disp.docent_id)" class="bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1.5 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition shadow-sm">
+                                                        <b class="mr-1">{{ obtenirNomDocent(disp.docent_id) }}</b> <span class="text-blue-600/70 font-normal">({{ disp.grup || 'Suport' }})</span>
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <select v-model="assignacioEnCurs.durada" class="border rounded text-sm p-1.5 bg-white"><option v-for="opt in opcionsDurada(abs.minuts_pendents)" :key="opt" :value="opt">{{ opt }} minuts</option></select>
-                                            <select v-model="assignacioEnCurs.substitut" class="border rounded text-sm p-1.5 flex-1 font-medium bg-white">
-                                                <option value="" disabled>Selecciona docent...</option>
-                                                <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d">{{ d.nom }}</option></optgroup>
-                                            </select>
-                                            <button @click="confirmarAssignacio" class="bg-green-600 text-white px-4 py-1.5 rounded text-sm font-bold hover:bg-green-700 shadow-sm transition">Guardar</button>
-                                            <button @click="assignacioEnCurs.absenciaId = null" class="text-gray-500 hover:text-gray-700 px-3 text-sm font-bold">X</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                                            <div class="flex items-center gap-3">
+                                                <select v-model="assignacioEnCurs.durada" class="border border-gray-300 rounded-lg text-sm p-2 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                                    <option v-for="opt in opcionsDurada(abs.minuts_pendents)" :key="opt" :value="opt">{{ opt }} min.</option>
+                                                </select>
+                                                <select v-model="assignacioEnCurs.substitut" class="border border-gray-300 rounded-lg text-sm p-2 flex-1 font-medium bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                                    <option value="" disabled>Selecciona el mestre que cobrirà...</option>
+                                                    <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d">{{ d.nom }}</option></optgroup>
+                                                </select>
+                                                <button @click="confirmarAssignacio" class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 shadow-sm transition active:scale-95">Guardar</button>
+                                                <button @click="assignacioEnCurs.absenciaId = null" class="text-gray-400 hover:text-gray-700 p-2"><i class="fa-solid fa-xmark"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
 
+        <!-- VISTA 2: HORARIS -->
         <main v-if="vistaActual === 'horaris'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold"><i class="fa-solid fa-table-cells text-blue-600 mr-2"></i> Graella d'horaris globals</h2>
-                    <div class="bg-gray-100 p-1 rounded-lg border">
-                        <button @click="modeHorari = 'mestre'" :class="modeHorari === 'mestre' ? 'bg-white shadow font-bold text-blue-700' : 'text-gray-500'" class="px-4 py-1.5 text-sm rounded transition">Per mestre</button>
-                        <button @click="modeHorari = 'grup'" :class="modeHorari === 'grup' ? 'bg-white shadow font-bold text-blue-700' : 'text-gray-500'" class="px-4 py-1.5 text-sm rounded transition">Per classe</button>
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight"><i class="fa-solid fa-table-cells text-blue-600 mr-2"></i> Graella d'horaris</h2>
+                    <div class="bg-gray-100 p-1.5 rounded-xl border border-gray-200 inline-flex">
+                        <button @click="modeHorari = 'mestre'" :class="modeHorari === 'mestre' ? 'bg-white shadow-sm font-bold text-blue-700 rounded-lg' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-1.5 text-sm transition">Per mestre</button>
+                        <button @click="modeHorari = 'grup'" :class="modeHorari === 'grup' ? 'bg-white shadow-sm font-bold text-blue-700 rounded-lg' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-1.5 text-sm transition">Per classe</button>
                     </div>
                 </div>
 
-                <div v-if="modeHorari === 'mestre'" class="space-y-4">
-                    <div class="flex flex-wrap items-center gap-4 border-b pb-4">
-                        <select v-model="mestreSeleccionatHorari" class="w-72 border p-2 text-sm rounded bg-blue-50 font-bold border-blue-200">
-                            <option value="" disabled>-- Selecciona un mestre --</option>
-                            <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id">{{ d.nom }}</option></optgroup>
-                        </select>
+                <!-- MODE MESTRE -->
+                <div v-if="modeHorari === 'mestre'" class="space-y-5">
+                    <div class="flex flex-wrap items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm text-gray-700">Editar horari de:</span>
+                            <select v-model="mestreSeleccionatHorari" class="w-64 border border-blue-300 p-2 text-sm rounded-lg bg-blue-50 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <option value="" disabled>-- Tria un docent --</option>
+                                <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id">{{ d.nom }}</option></optgroup>
+                            </select>
+                        </div>
                         
-                        <div v-if="mestreSeleccionatHorari" class="flex items-center gap-2 bg-yellow-50 px-3 py-2 rounded border border-yellow-200">
-                            <span class="text-xs text-yellow-800 font-bold"><i class="fa-regular fa-copy"></i> Clonar de:</span>
-                            <select v-model="mestreAClonar" class="border p-1 rounded text-xs bg-white">
-                                <option value="" disabled>Tria company...</option>
+                        <div v-if="mestreSeleccionatHorari" class="ml-auto flex items-center gap-2 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
+                            <span class="text-xs text-yellow-800 font-bold"><i class="fa-regular fa-copy mr-1"></i> Clonar de:</span>
+                            <select v-model="mestreAClonar" class="border border-yellow-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-yellow-500">
+                                <option value="" disabled>Tria un company...</option>
                                 <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id" v-show="d.id !== mestreSeleccionatHorari">{{ d.nom }}</option></optgroup>
                             </select>
-                            <button @click="clonarHorari" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1 rounded text-xs font-bold transition shadow-sm">Aplicar</button>
+                            <button @click="clonarHorari" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm">Aplicar</button>
                         </div>
                     </div>
 
-                    <div v-if="mestreSeleccionatHorari" class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg shadow-sm mb-4">
-                        <h4 class="font-bold text-indigo-900 mb-2 flex items-center gap-2"><i class="fa-solid fa-paint-roller"></i> Mode pinzell</h4>
-                        <p class="text-xs text-indigo-700 mb-3">Escriu la classe un cop i fes clic directament a les caselles de la taula per omplir-les a l'instant.</p>
+                    <!-- EINA: PINZELL -->
+                    <div v-if="mestreSeleccionatHorari" class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center gap-4">
+                        <div>
+                            <h4 class="font-bold text-indigo-900 flex items-center gap-2"><i class="fa-solid fa-paint-roller"></i> Mode pinzell ràpid</h4>
+                            <p class="text-xs text-indigo-700 mt-1">Escriu la classe una vegada i fes clic a les caselles de la taula per omplir-les de cop.</p>
+                        </div>
                         
-                        <label class="flex items-center gap-2 mb-2 font-bold text-sm cursor-pointer">
-                            <input type="checkbox" v-model="modePinzell" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"> 
-                            Activar pinzell
-                        </label>
-                        
-                        <div v-if="modePinzell" class="flex gap-2 max-w-md">
-                            <input v-model="textPinzell" type="text" placeholder="Ex: 6è A Matemàtiques..." class="border border-indigo-300 rounded p-1.5 text-sm flex-1 font-bold">
-                            <label class="flex items-center gap-1 text-xs font-bold bg-white border px-3 rounded cursor-pointer hover:bg-gray-50 text-indigo-900 shadow-sm">
-                                <input type="checkbox" v-model="comodiPinzell" class="w-4 h-4"> Marcar com a comodí
+                        <div class="flex-1 flex flex-wrap items-center gap-3 bg-white p-2 rounded-lg border border-indigo-100">
+                            <label class="flex items-center gap-2 font-bold text-sm cursor-pointer text-indigo-900 bg-indigo-100 px-3 py-2 rounded-lg">
+                                <input type="checkbox" v-model="modePinzell" class="w-4 h-4 text-indigo-600 rounded"> Activar
+                            </label>
+                            
+                            <input v-if="modePinzell" v-model="textPinzell" type="text" placeholder="Ex: Matemàtiques 6è A" class="border border-indigo-300 rounded-lg p-2 text-sm flex-1 font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none min-w-[150px]">
+                            
+                            <label v-if="modePinzell" class="flex items-center gap-2 text-xs font-bold bg-gray-50 border border-gray-200 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-gray-100 transition text-gray-700 whitespace-nowrap">
+                                <input type="checkbox" v-model="comodiPinzell" class="w-4 h-4 text-green-500 rounded"> És comodí
                             </label>
                         </div>
                     </div>
 
-                    <table v-if="mestreSeleccionatHorari" class="w-full taula-horaris mt-4">
-                        <thead><tr><th class="w-24">Hora</th><th v-for="dia in diesSetmana" :key="dia">{{ dia }}</th></tr></thead>
-                        <tbody>
-                            <tr v-for="b in horariEscola" :key="b.id">
-                                <td class="font-bold text-xs bg-gray-50 text-center">{{ b.nom }}</td>
-                                <td v-for="dia in diesSetmana" :key="dia" class="relative hover:bg-blue-50 transition" :class="{'ring-2 ring-indigo-400': modePinzell}">
-                                    
-                                    <div v-if="modePinzell" @click="aplicarPinzell(dia, b.id)" class="absolute inset-0 z-10 cursor-crosshair hover:bg-indigo-200/40 transition"></div>
-                                    
-                                    <div class="flex flex-col gap-1.5 h-full justify-between relative z-0">
-                                        <textarea :value="getAssignacio(mestreSeleccionatHorari, dia, b.id).grup" 
-                                               @blur="e => updateAssignacio(mestreSeleccionatHorari, dia, b.id, 'grup', e.target.value)" 
-                                               placeholder="Classe..." 
-                                               class="w-full border border-gray-300 rounded p-1.5 text-xs font-bold text-blue-900 bg-white shadow-sm resize-none h-14 focus:ring-1 focus:ring-blue-500"></textarea>
+                    <div class="taula-wrapper" v-if="mestreSeleccionatHorari">
+                        <table class="w-full taula-horaris">
+                            <thead><tr><th class="w-24 border-t-0 border-l-0 bg-transparent"></th><th v-for="dia in diesSetmana" :key="dia">{{ dia }}</th></tr></thead>
+                            <tbody>
+                                <tr v-for="b in horariEscola" :key="b.id">
+                                    <td class="font-bold text-xs bg-gray-50 text-center text-gray-600 align-middle">{{ b.nom }}</td>
+                                    <td v-for="dia in diesSetmana" :key="dia" class="relative hover:bg-blue-50/50 transition p-1.5" :class="{'ring-2 ring-indigo-400 ring-inset bg-indigo-50/30': modePinzell}">
                                         
-                                        <button @click="updateAssignacio(mestreSeleccionatHorari, dia, b.id, 'disponible', !getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible)" 
-                                                :class="getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible ? 'bg-green-500 text-white border-green-600 shadow-inner' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'" class="w-full py-1 text-[10px] font-bold rounded border transition-colors mt-auto">
-                                            {{ getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible ? 'Comodí actiu' : 'Marcar comodí' }}
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                        <!-- OVERLAY PINZELL -->
+                                        <div v-if="modePinzell" @click="aplicarPinzell(dia, b.id)" class="absolute inset-0 z-10 cursor-crosshair hover:bg-indigo-300/40 transition rounded"></div>
+                                        
+                                        <div class="flex flex-col gap-1.5 h-full relative z-0">
+                                            <!-- Guardem localment en escriure (@input) per no perdre la dada si cliquen el botó abans de sortir -->
+                                            <textarea :value="getAssignacio(mestreSeleccionatHorari, dia, b.id).grup" 
+                                                   @input="e => updateAssignacioLocal(mestreSeleccionatHorari, dia, b.id, 'grup', e.target.value)"
+                                                   @blur="e => guardarAssignacioDB(mestreSeleccionatHorari, dia, b.id)"
+                                                   placeholder="Classe..." 
+                                                   class="w-full border border-gray-200 rounded-lg p-2 text-xs font-bold text-blue-900 bg-white shadow-sm resize-none h-16 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"></textarea>
+                                            
+                                            <button @click="toggleComodi(mestreSeleccionatHorari, dia, b.id)" 
+                                                    :class="getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible ? 'bg-green-100 text-green-800 border-green-300 shadow-inner' : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'" 
+                                                    class="w-full py-1.5 text-[10px] uppercase font-bold rounded-md border transition-colors flex items-center justify-center gap-1">
+                                                <i class="fa-solid fa-hand-sparkles" v-if="getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible"></i>
+                                                {{ getAssignacio(mestreSeleccionatHorari, dia, b.id).disponible ? 'Comodí actiu' : 'Marcar comodí' }}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                    <div v-if="mestreSeleccionatHorari" class="mt-8 bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
-                        <h4 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fa-solid fa-keyboard text-gray-500"></i> Assistent d'escriptura ràpida (teclat)</h4>
-                        <p class="text-xs text-gray-600 mb-3">Si ets ràpid teclejant, escriu o enganxa aquí les classes línia per línia i es col·locaran soles a la graella superior. <br><b>Format obligatori:</b> <code>Dia ; Hora ; Classe</code></p>
-                        
-                        <div class="bg-gray-80 text-gray-700 text-[11px] p-2 rounded mb-3 border font-mono">
-                            Dilluns ; 9h a 10h ; Matemàtiques<br>
-                            Dimarts ; 11:30h ; Anglès<br>
-                            Dimecres ; 15h ; Comodí
+                    <!-- EINA: ENTRADA TEXTUAL MANUAL -->
+                    <div v-if="mestreSeleccionatHorari" class="mt-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-gray-100 p-3 rounded-full text-gray-500"><i class="fa-solid fa-keyboard text-xl"></i></div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-800 text-lg">Assistent d'escriptura per teclat</h4>
+                                <p class="text-sm text-gray-600 mb-4 mt-1">Escriu o enganxa aquí les classes línia per línia i es col·locaran automàticament a la graella. Utilitza el format: <b>Dia ; Hora ; Classe</b></p>
+                                
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <textarea v-model="textEntradaManual" placeholder="Dilluns ; 9:00 ; Matemàtiques 6è A&#10;Dimarts ; 11:30 ; Anglès 5è B&#10;Dimecres ; 15:00 ; Comodí" class="w-full h-32 text-sm p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono shadow-inner"></textarea>
+                                        <button @click="processarEntradaManual" class="mt-3 bg-gray-800 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-gray-900 transition shadow-sm w-full">Processar text i col·locar classes</button>
+                                    </div>
+                                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-xs text-blue-800 space-y-2 font-medium">
+                                        <p><i class="fa-solid fa-circle-info mr-1"></i> <b>Consells d'escriptura:</b></p>
+                                        <ul class="list-disc pl-5 space-y-1 text-blue-700/80">
+                                            <li>Separa els elements amb punt i coma ( <b>;</b> ).</li>
+                                            <li>L'hora no cal que sigui exacta, només cal que contingui el text de la franja (ex: escriure "9" quadrarà amb la franja "9:00 - 10:00").</li>
+                                            <li>Si la paraula "comodí", "suport" o "guàrdia" apareix a la classe, s'activarà el botó verd sol.</li>
+                                            <li>Escriu el nom del grup dins de la classe (ex: "6è A") i així l'assignatura sortirà també a l'horari d'aquell grup automàticament!</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <textarea v-model="textEntradaManual" placeholder="Escriu les classes aquí..." class="w-full h-32 text-sm p-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
-                        <button @click="processarEntradaManual" class="mt-3 bg-gray-800 text-white font-bold px-6 py-2 rounded hover:bg-gray-900 transition shadow-sm">Processar text i col·locar classes</button>
                     </div>
                 </div>
 
+                <!-- MODE GRUP -->
                 <div v-if="modeHorari === 'grup'" class="space-y-4">
-                    <select v-model="grupSeleccionatHorari" class="w-64 border p-2 text-lg rounded bg-green-50 font-bold border-green-200">
-                        <option value="" disabled>-- Selecciona classe --</option>
-                        <option v-for="g in llistaGrupsDinamica" :key="g" :value="g">{{ g }}</option>
-                    </select>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 inline-block mb-2">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-sm text-gray-700">Veure horari de la classe:</span>
+                            <select v-model="grupSeleccionatHorari" class="w-64 border border-green-300 p-2 text-sm rounded-lg bg-green-50 font-bold focus:ring-2 focus:ring-green-500 focus:outline-none">
+                                <option value="" disabled>-- Selecciona classe --</option>
+                                <option v-for="g in llistaGrupsDinamica" :key="g" :value="g">{{ g }}</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    <table v-if="grupSeleccionatHorari" class="w-full taula-horaris mt-4">
-                        <thead><tr><th class="w-24">Hora</th><th v-for="dia in diesSetmana" :key="dia">{{ dia }}</th></tr></thead>
-                        <tbody>
-                            <tr v-for="b in horariEscola" :key="b.id">
-                                <td class="font-bold text-xs bg-gray-50 text-center">{{ b.nom }}</td>
-                                <td v-for="dia in diesSetmana" :key="dia" class="align-top bg-white">
-                                    <div class="flex flex-col gap-1.5">
-                                        <div v-if="getAssignacionsGrup(grupSeleccionatHorari, dia, b.id).length === 0" class="text-xs text-gray-400 italic text-center py-4">Lliure</div>
-                                        <div v-for="asig in getAssignacionsGrup(grupSeleccionatHorari, dia, b.id)" :key="asig.id" class="bg-blue-50 border border-blue-200 rounded p-1.5 text-[11px] shadow-sm">
-                                            <span class="font-bold text-blue-900 block border-b border-blue-100 pb-0.5 mb-0.5">{{ obtenirNomDocent(asig.docent_id) }}</span>
-                                            <span class="text-gray-600 whitespace-pre-wrap">{{ asig.grup }}</span>
+                    <div class="taula-wrapper" v-if="grupSeleccionatHorari">
+                        <table class="w-full taula-horaris mt-2">
+                            <thead><tr><th class="w-24 border-t-0 border-l-0 bg-transparent"></th><th v-for="dia in diesSetmana" :key="dia">{{ dia }}</th></tr></thead>
+                            <tbody>
+                                <tr v-for="b in horariEscola" :key="b.id">
+                                    <td class="font-bold text-xs bg-gray-50 text-center text-gray-600 align-middle">{{ b.nom }}</td>
+                                    <td v-for="dia in diesSetmana" :key="dia" class="align-top bg-white p-2">
+                                        <div class="flex flex-col gap-1.5 h-full">
+                                            <div v-if="getAssignacionsGrup(grupSeleccionatHorari, dia, b.id).length === 0" class="text-xs text-gray-400 italic text-center py-6 border-2 border-dashed border-gray-100 rounded-lg">Sense mestre</div>
+                                            <div v-for="asig in getAssignacionsGrup(grupSeleccionatHorari, dia, b.id)" :key="asig.id" class="bg-green-50 border border-green-200 rounded-lg p-2.5 shadow-sm">
+                                                <span class="font-bold text-green-900 block border-b border-green-200/50 pb-1 mb-1">{{ obtenirNomDocent(asig.docent_id) }}</span>
+                                                <span class="text-gray-700 whitespace-pre-wrap text-xs">{{ asig.grup }}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
 
+        <!-- VISTA 4: WHATSAPP -->
         <main v-if="vistaActual === 'whatsapp'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <div class="bg-white rounded-lg shadow p-6">
-                <header class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-6">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
+                <header class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-gray-100 pb-6">
                   <div>
-                    <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-slate-800"><i class="fa-brands fa-whatsapp text-[#58ACA6] mr-2"></i>Generador de Whatsapp</h2>
-                    <p class="text-slate-600 text-sm md:text-base">Planificació setmanal per al grup de mestres.</p>
+                    <h2 class="text-2xl font-bold tracking-tight text-gray-800"><i class="fa-brands fa-whatsapp text-green-500 mr-2 text-3xl align-middle"></i> Generador de WhatsApp</h2>
+                    <p class="text-gray-500 text-sm mt-1">Crea el missatge de planificació setmanal per enviar a la resta del claustre.</p>
                   </div>
-                  <div class="flex flex-col sm:flex-row gap-2">
-                    <input v-model="whatsappCentre" type="text" placeholder="Nom del centre" class="w-full sm:w-72 rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-4 focus:ring-[#58ACA6]/30"/>
-                    <input v-model="whatsappSetmana" type="text" placeholder="Setmana (ex. 8-12 set)" class="w-full sm:w-60 rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-4 focus:ring-[#58ACA6]/30"/>
+                  <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <input v-model="whatsappCentre" type="text" placeholder="Nom del centre" class="w-full sm:w-64 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50"/>
+                    <input v-model="whatsappSetmana" type="text" placeholder="Setmana (ex. 8-12 set)" class="w-full sm:w-48 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50"/>
                   </div>
                 </header>
                 
-                <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center justify-between">
+                <div class="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                     <div>
-                        <h4 class="font-bold text-blue-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-down"></i> Importar substitucions automàticament</h4>
-                        <p class="text-xs text-blue-700">Carrega totes les substitucions que ja tens anotades al Tauler per a la setmana indicada.</p>
+                        <h4 class="font-bold text-blue-900 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-down text-lg"></i> Importar substitucions automàticament</h4>
+                        <p class="text-xs text-blue-700 mt-1 max-w-2xl">Carrega totes les substitucions que estiguin anotades al <b>Tauler diari</b> per la setmana que tinguis seleccionada a sota. Generarà el text net assignatura per assignatura.</p>
                     </div>
-                    <button @click="importarAbsenciesAWhatsapp" class="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition flex items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Carregar setmana
+                    <button @click="importarAbsenciesAWhatsapp" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm whitespace-nowrap active:scale-95">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Absorbeix la setmana
                     </button>
                 </div>
 
-                <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-                    <div v-for="d in diesWhatsapp" :key="d.id" :class="'day-'+d.id" class="card rounded-2xl bg-white p-4 border border-slate-200">
-                      <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-bold text-slate-800">{{ d.label }} {{ d.emoji }}</h3>
-                        <input type="date" v-model="d.data" @change="sincronitzarDatesWhatsapp(d)" class="rounded-lg border border-slate-200 px-2 py-1 text-sm focus:ring-2 focus:ring-[#58ACA6] outline-none"/>
+                <div class="grid md:grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
+                    <div v-for="d in diesWhatsapp" :key="d.id" :class="'day-'+d.id" class="card rounded-2xl bg-white p-4 border border-gray-200 flex flex-col">
+                      <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-2 mb-3">
+                        <h3 class="font-bold text-gray-800 text-base">{{ d.label }} {{ d.emoji }}</h3>
+                        <input type="date" v-model="d.data" @change="sincronitzarDatesWhatsapp(d)" class="rounded-lg border border-gray-300 px-2 py-1 text-xs text-gray-600 focus:ring-2 focus:ring-green-500 outline-none w-full xl:w-auto"/>
                       </div>
-                      <div class="space-y-2">
-                        <textarea v-model="d.tasks" rows="3" class="w-full rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm focus:bg-white focus:border-slate-300 outline-none" placeholder="Tasques / substitucions..."></textarea>
-                        <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm focus:bg-white focus:border-slate-300 outline-none" placeholder="🚌 Sortides..."></textarea>
-                        <textarea v-model="d.extra" rows="1" class="w-full rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm focus:bg-white focus:border-slate-300 outline-none" placeholder="🎉 Altres..."></textarea>
+                      
+                      <div class="space-y-3 flex-1">
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
+                            <textarea v-model="d.tasks" rows="4" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-none transition" placeholder="..."></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
+                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-none transition" placeholder="🚌 ..."></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Altres</label>
+                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-none transition" placeholder="🎉 ..."></textarea>
+                        </div>
                       </div>
-                      <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
-                        <label class="text-xs text-slate-500 inline-flex items-center gap-1.5 cursor-pointer">
-                          <input type="checkbox" v-model="d.incloure" class="rounded text-[#58ACA6]"> Incloure
+                      
+                      <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <label class="text-xs font-bold text-gray-600 inline-flex items-center gap-2 cursor-pointer hover:text-green-600 transition">
+                          <input type="checkbox" v-model="d.incloure" class="rounded text-green-500 focus:ring-green-500 w-4 h-4"> Incloure
                         </label>
-                        <button @click="netejarDiaWhatsapp(d)" class="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors">Neteja dia</button>
+                        <button @click="netejarDiaWhatsapp(d)" class="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors p-1"><i class="fa-solid fa-eraser mr-1"></i> Neteja</button>
                       </div>
                     </div>
                 </div>
 
-                <div class="card rounded-2xl bg-white p-4 md:p-6 border border-slate-200 flex flex-col gap-4">
-                  <div class="flex flex-wrap items-center justify-between gap-3">
-                    <h3 class="font-semibold text-lg">Missatge generat</h3>
-                    <div class="flex flex-wrap gap-2">
-                      <button @click="generarMissatgeWhatsapp" class="rounded-xl px-4 py-2.5 bg-[#58ACA6] text-white font-semibold hover:opacity-95 transition-all">Genera missatge</button>
-                      <button @click="copiarMissatgeWhatsapp" class="rounded-xl px-4 py-2.5 bg-slate-900 text-white font-semibold hover:opacity-95 transition-all flex items-center gap-2">
-                        <span>{{ textBotoCopiarWhatsapp }}</span>
-                      </button>
-                      <button @click="compartirWhatsapp" class="rounded-xl px-4 py-2.5 bg-green-600 text-white font-semibold hover:opacity-95 transition-all">Compartir</button>
-                      <button @click="esborrarTotWhatsapp" class="rounded-xl px-4 py-2.5 bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors">Esborrar tot</button>
-                    </div>
+                <div class="bg-gray-50 rounded-2xl p-5 md:p-6 border border-gray-200 flex flex-col lg:flex-row gap-6">
+                  <div class="flex-1">
+                    <textarea v-model="missatgeWhatsappFinal" class="mono w-full h-full min-h-[250px] rounded-xl border border-gray-300 p-5 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-colors text-sm shadow-inner" placeholder="Clica 'Genera el missatge' per previsualitzar-lo aquí..."></textarea>
                   </div>
-                  <textarea v-model="missatgeWhatsappFinal" class="mono w-full min-h-[220px] rounded-xl border border-slate-300 p-4 bg-slate-50 focus:bg-white transition-colors" placeholder="El missatge apareixerà aquí..."></textarea>
+                  
+                  <div class="w-full lg:w-64 flex flex-col gap-3 justify-center">
+                      <button @click="generarMissatgeWhatsapp" class="w-full rounded-xl px-4 py-3 bg-gray-800 text-white font-bold hover:bg-gray-900 transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-arrows-rotate"></i> Genera el missatge</button>
+                      
+                      <div class="h-px bg-gray-200 my-2"></div>
+                      
+                      <button @click="copiarMissatgeWhatsapp" class="w-full rounded-xl px-4 py-3 bg-green-100 text-green-800 border border-green-300 font-bold hover:bg-green-200 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-copy"></i> <span>{{ textBotoCopiarWhatsapp }}</span>
+                      </button>
+                      
+                      <button @click="compartirWhatsapp" class="w-full rounded-xl px-4 py-3 bg-green-600 text-white font-bold hover:bg-green-700 transition-all shadow-md flex items-center justify-center gap-2"><i class="fa-brands fa-whatsapp text-lg"></i> Obre a WhatsApp</button>
+                      
+                      <button @click="esborrarTotWhatsapp" class="w-full mt-4 rounded-xl px-4 py-2 bg-transparent text-red-500 font-bold hover:bg-red-50 transition-colors border border-transparent hover:border-red-200 text-sm">Esborra-ho tot</button>
+                  </div>
                 </div>
             </div>
         </main>
 
-        <main v-if="vistaActual === 'configuracio'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-white rounded-lg shadow p-5 border-t-4 border-orange-500 flex flex-col h-[500px]">
-                <h3 class="text-lg font-bold mb-4">1. Nivells docents (categories)</h3>
-                <div class="flex gap-2 mb-4 bg-gray-50 p-2 rounded border">
-                    <input v-model="novaCategoria" @keyup.enter="afegirCategoria" type="text" placeholder="Ex: EI, CI, Equip directiu..." class="flex-1 border p-1.5 rounded text-sm">
-                    <button @click="afegirCategoria" class="bg-orange-500 text-white px-3 rounded font-bold hover:bg-orange-600">+</button>
-                </div>
-                <ul class="space-y-2 overflow-y-auto pr-2 flex-1 border-t pt-2">
-                    <li v-for="(cat, index) in categoriesDocents" :key="cat" class="p-2 bg-white rounded border text-sm shadow-sm flex justify-between items-center">
-                        <span class="font-medium font-bold text-gray-700">{{ cat }}</span>
-                        <button @click="esborrarCategoria(index)" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </li>
-                </ul>
+        <!-- VISTA 5: CONFIGURACIÓ -->
+        <main v-if="vistaActual === 'configuracio'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 tracking-tight"><i class="fa-solid fa-gear text-gray-500 mr-2"></i> Configuració de l'escola</h2>
+                <p class="text-sm text-gray-500 mt-1">Configura l'estructura del centre. Els canvis es guarden automàticament.</p>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-5 border-t-4 border-indigo-600 flex flex-col h-[500px]">
-                <h3 class="text-lg font-bold mb-4">2. Claustre</h3>
-                <div class="flex gap-2 mb-4 bg-gray-50 p-2 rounded border">
-                    <input v-model="nouMestreNom" @keyup.enter="afegirMestre" type="text" placeholder="Nou mestre..." class="flex-1 border p-1.5 rounded text-sm">
-                    <select v-model="novaCategoriaMestre" class="border p-1.5 rounded text-sm w-28 font-bold">
-                        <option v-for="cat in categoriesDocents" :key="cat" :value="cat">{{ cat }}</option>
-                    </select>
-                    <button @click="afegirMestre" class="bg-indigo-600 text-white px-3 rounded font-bold hover:bg-indigo-700">+</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
+                
+                <!-- 1. CATEGORIES -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-orange-400 border border-gray-200 max-h-[420px] flex flex-col">
+                    <h3 class="text-base font-bold mb-3 text-gray-800">1. Nivells i categories</h3>
+                    <div class="flex gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                        <input v-model="novaCategoria" @keyup.enter="afegirCategoria" type="text" placeholder="Ex: Equip Directiu" class="flex-1 border border-gray-300 p-2 rounded-lg text-sm min-w-0 focus:ring-2 focus:ring-orange-500 outline-none">
+                        <button @click="afegirCategoria" class="bg-orange-500 text-white px-3.5 rounded-lg font-bold hover:bg-orange-600 transition flex-shrink-0"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul class="space-y-2 overflow-y-auto pr-2 flex-1 scroll-elegant border-t border-gray-100 pt-3">
+                        <li v-for="(cat, index) in categoriesDocents" :key="cat" class="p-2.5 bg-white rounded-lg border border-gray-200 text-sm shadow-sm flex justify-between items-center group hover:border-orange-300 transition">
+                            <span class="font-bold text-gray-700">{{ cat }}</span>
+                            <button @click="esborrarCategoria(index)" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button>
+                        </li>
+                    </ul>
                 </div>
-                <ul class="space-y-2 overflow-y-auto pr-2 flex-1 border-t pt-2">
-                    <li v-if="docents.length === 0" class="text-gray-400 text-sm italic text-center py-4">Cap mestre registrat.</li>
-                    <li v-for="(mestre, index) in docents" :key="mestre.id" class="p-2 bg-white rounded border text-sm shadow-sm flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <span class="font-medium">{{ mestre.nom }}</span>
-                            <span class="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">{{ mestre.categoria || 'Sense cat.' }}</span>
+
+                <!-- 2. CLAUSTRE -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-indigo-500 border border-gray-200 max-h-[420px] flex flex-col xl:col-span-1">
+                    <h3 class="text-base font-bold mb-3 text-gray-800">2. Claustre</h3>
+                    <div class="flex flex-col gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                        <input v-model="nouMestreNom" @keyup.enter="afegirMestre" type="text" placeholder="Nom del docent" class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <div class="flex gap-2">
+                            <select v-model="novaCategoriaMestre" class="border border-gray-300 p-2 rounded-lg text-sm flex-1 font-medium text-gray-700 bg-white focus:outline-none">
+                                <option v-for="cat in categoriesDocents" :key="cat" :value="cat">{{ cat }}</option>
+                            </select>
+                            <button @click="afegirMestre" class="bg-indigo-600 text-white px-4 rounded-lg font-bold hover:bg-indigo-700 transition flex-shrink-0">Afegir</button>
                         </div>
-                        <button @click="esborrarMestre(index)" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </li>
-                </ul>
-            </div>
+                    </div>
+                    <ul class="space-y-2 overflow-y-auto pr-2 flex-1 scroll-elegant border-t border-gray-100 pt-3">
+                        <li v-if="docents.length === 0" class="text-gray-400 text-xs italic text-center py-4">Cap docent afegit.</li>
+                        <li v-for="(mestre, index) in docents" :key="mestre.id" class="p-2.5 bg-white rounded-lg border border-gray-200 text-sm shadow-sm flex justify-between items-center group hover:border-indigo-300 transition">
+                            <div class="flex items-center gap-2 truncate">
+                                <span class="font-medium text-gray-800 truncate">{{ mestre.nom }}</span>
+                                <span class="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-md font-bold whitespace-nowrap">{{ mestre.categoria || 'Sense cat.' }}</span>
+                            </div>
+                            <button @click="esborrarMestre(index)" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 ml-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </li>
+                    </ul>
+                </div>
 
-            <div class="bg-white rounded-lg shadow p-5 border-t-4 border-emerald-600 flex flex-col h-[500px]">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold">3. Classes</h3>
-                    <button @click="afegirGrupsPerDefecte" class="bg-yellow-100 text-yellow-800 border border-yellow-300 text-xs px-2 py-1 rounded font-bold shadow-sm hover:bg-yellow-200 transition" title="Genera automàticament de I3 a 6è B">Generar llista defecte</button>
+                <!-- 3. CLASSES -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-emerald-500 border border-gray-200 max-h-[420px] flex flex-col">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-base font-bold text-gray-800">3. Classes</h3>
+                        <button @click="afegirGrupsPerDefecte" class="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border border-yellow-300 text-[10px] px-2 py-1 rounded-md font-bold transition shadow-sm" title="Genera I3 fins 6è B"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Auto-crear</button>
+                    </div>
+                    
+                    <div class="flex gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                        <input v-model="nouGrupNom" @keyup.enter="afegirGrup" type="text" placeholder="Ex: 6è A" class="flex-1 border border-gray-300 p-2 rounded-lg text-sm min-w-0 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <button @click="afegirGrup" class="bg-emerald-600 text-white px-3.5 rounded-lg font-bold hover:bg-emerald-700 transition flex-shrink-0"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul class="space-y-2 overflow-y-auto pr-2 flex-1 scroll-elegant border-t border-gray-100 pt-3">
+                        <li v-for="(grup, index) in grupsTots" :key="grup.id" class="p-2.5 bg-white rounded-lg border border-gray-200 text-sm shadow-sm flex justify-between items-center group hover:border-emerald-300 transition">
+                            <span class="font-medium text-gray-800">{{ grup.nom }}</span>
+                            <button @click="esborrarGrup(index)" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button>
+                        </li>
+                    </ul>
                 </div>
                 
-                <div class="flex gap-2 mb-4 bg-gray-50 p-2 rounded border">
-                    <input v-model="nouGrupNom" @keyup.enter="afegirGrup" type="text" placeholder="Nova classe..." class="flex-1 border p-1.5 rounded text-sm">
-                    <button @click="afegirGrup" class="bg-emerald-600 text-white px-3 rounded font-bold hover:bg-emerald-700">+</button>
-                </div>
-                <ul class="space-y-2 overflow-y-auto pr-2 flex-1 border-t pt-2">
-                    <li v-for="(grup, index) in grupsTots" :key="grup.id" class="p-2 bg-white rounded border text-sm shadow-sm flex justify-between items-center">
-                        <span class="font-medium">{{ grup.nom }}</span>
-                        <button @click="esborrarGrup(index)" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="bg-white rounded-lg shadow p-5 border-t-4 border-teal-600 flex flex-col h-[500px]">
-                <h3 class="text-lg font-bold mb-4">4. Blocs horaris</h3>
-                <div class="flex flex-col gap-2 mb-4 bg-gray-50 p-2 rounded border">
-                    <input v-model="nouBlocNom" @keyup.enter="afegirBloc" type="text" placeholder="Ex: 09:00 - 10:00" class="flex-1 border p-1.5 rounded text-sm">
-                    <div class="flex gap-2">
-                        <select v-model="nouBlocMinuts" class="flex-1 border p-1.5 rounded text-sm">
-                            <option value="30">30'</option><option value="45">45'</option><option value="60">60'</option><option value="90">90'</option>
-                        </select>
-                        <button @click="afegirBloc" class="bg-teal-600 text-white px-4 rounded font-bold hover:bg-teal-700">+</button>
+                <!-- 4. BLOCS -->
+                <div class="bg-white rounded-2xl shadow-sm p-5 border-t-4 border-teal-500 border border-gray-200 max-h-[420px] flex flex-col">
+                    <h3 class="text-base font-bold mb-3 text-gray-800">4. Franges horàries</h3>
+                    <div class="flex flex-col gap-2 mb-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                        <input v-model="nouBlocNom" @keyup.enter="afegirBloc" type="text" placeholder="Ex: 09:00 - 10:00" class="w-full border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+                        <div class="flex gap-2">
+                            <select v-model="nouBlocMinuts" class="flex-1 border border-gray-300 p-2 rounded-lg text-sm font-medium text-gray-700 bg-white focus:outline-none">
+                                <option value="30">30 minuts</option><option value="45">45 minuts</option><option value="60">60 minuts</option><option value="90">90 minuts</option>
+                            </select>
+                            <button @click="afegirBloc" class="bg-teal-600 text-white px-4 rounded-lg font-bold hover:bg-teal-700 transition flex-shrink-0">Afegir</button>
+                        </div>
                     </div>
+                    <ul class="space-y-2 overflow-y-auto pr-2 flex-1 scroll-elegant border-t border-gray-100 pt-3">
+                        <li v-for="(bloc, index) in horariEscola" :key="bloc.id" class="p-2.5 bg-white rounded-lg border border-gray-200 text-sm shadow-sm flex justify-between items-center group hover:border-teal-300 transition">
+                            <span class="font-bold text-gray-700">{{ bloc.nom }} <span class="font-normal text-xs text-gray-400 ml-1">({{ bloc.minuts_totals }}')</span></span>
+                            <button @click="esborrarBloc(index)" class="text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"><i class="fa-solid fa-trash-can"></i></button>
+                        </li>
+                    </ul>
                 </div>
-                <ul class="space-y-2 overflow-y-auto pr-2 flex-1 border-t pt-2">
-                    <li v-for="(bloc, index) in horariEscola" :key="bloc.id" class="flex justify-between items-center p-2 bg-white rounded border text-sm shadow-sm">
-                        <span class="font-bold">{{ bloc.nom }}</span>
-                        <button @click="esborrarBloc(index)" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </li>
-                </ul>
             </div>
         </main>
     </div>
@@ -497,11 +591,7 @@
             });
 
             watch([whatsappCentre, whatsappSetmana, diesWhatsapp], () => {
-                const dades = {
-                    centre: whatsappCentre.value,
-                    setmana: whatsappSetmana.value,
-                    dies: diesWhatsapp.value
-                };
+                const dades = { centre: whatsappCentre.value, setmana: whatsappSetmana.value, dies: diesWhatsapp.value };
                 localStorage.setItem('gestor_whatsapp_dades', JSON.stringify(dades));
             }, { deep: true });
 
@@ -514,14 +604,10 @@
                     if (confirm(`La data no és un ${diaModificat.label}. Vols ajustar-la al ${diaModificat.label} d'aquella setmana?`)) {
                         const diff = diaModificat.dayIdx - (actualDayIndex === 0 ? 7 : actualDayIndex);
                         selectedDate.setDate(selectedDate.getDate() + diff);
-                    } else { 
-                        return; 
-                    }
+                    } else { return; }
                 }
-
                 const mondayBase = new Date(selectedDate);
                 mondayBase.setDate(selectedDate.getDate() - (diaModificat.dayIdx - 1));
-
                 diesWhatsapp.value.forEach((d, idx) => {
                     const syncDate = new Date(mondayBase);
                     syncDate.setDate(mondayBase.getDate() + idx);
@@ -529,14 +615,11 @@
                 });
             };
 
-            const netejarDiaWhatsapp = (dia) => {
-                dia.tasks = ''; dia.outings = ''; dia.extra = '';
-            };
+            const netejarDiaWhatsapp = (dia) => { dia.tasks = ''; dia.outings = ''; dia.extra = ''; };
 
             const esborrarTotWhatsapp = () => {
                 if(confirm('Esborrar totes les dades del generador de Whatsapp?')) { 
-                    whatsappCentre.value = '';
-                    whatsappSetmana.value = '';
+                    whatsappCentre.value = ''; whatsappSetmana.value = '';
                     diesWhatsapp.value.forEach(d => { d.data = ''; d.tasks = ''; d.outings = ''; d.extra = ''; d.incloure = true; });
                     missatgeWhatsappFinal.value = '';
                 }
@@ -582,35 +665,24 @@
                     await navigator.clipboard.writeText(missatgeWhatsappFinal.value);
                     textBotoCopiarWhatsapp.value = '✅ Copiat!';
                     setTimeout(() => { textBotoCopiarWhatsapp.value = 'Copia'; }, 2000);
-                } catch(err) {
-                    alert('Error al copiar el text');
-                }
+                } catch(err) { alert('Error al copiar el text'); }
             };
 
             const compartirWhatsapp = () => {
                 if(!missatgeWhatsappFinal.value) generarMissatgeWhatsapp();
                 const text = missatgeWhatsappFinal.value;
-                if (navigator.share) {
-                    navigator.share({ text }).catch(()=>{});
-                } else {
-                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                }
+                if (navigator.share) { navigator.share({ text }).catch(()=>{});
+                } else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); }
             };
 
             const importarAbsenciesAWhatsapp = async () => {
-                let dataRefStr = diesWhatsapp.value[0].data;
-                if(!dataRefStr) {
-                    alert("Si us plau, selecciona una data a la casella de 'Dilluns' del Whatsapp per saber quina setmana vols importar.");
-                    return;
-                }
+                let dataRefStr = diesWhatsapp.value[0].data; 
+                if(!dataRefStr) { alert("Si us plau, selecciona una data a la casella de 'Dilluns' del Whatsapp per saber quina setmana vols importar."); return; }
                 
                 const dataInicial = new Date(dataRefStr);
-                
                 for(let i=0; i<5; i++) {
-                    const dataDia = new Date(dataInicial);
-                    dataDia.setDate(dataInicial.getDate() + i);
+                    const dataDia = new Date(dataInicial); dataDia.setDate(dataInicial.getDate() + i);
                     const dataStrSql = `${dataDia.getFullYear()}-${String(dataDia.getMonth() + 1).padStart(2, '0')}-${String(dataDia.getDate()).padStart(2, '0')}`;
-                    
                     const { data: abs } = await db.from('absencies').select('*').eq('data', dataStrSql);
                     
                     if(abs && abs.length > 0) {
@@ -618,30 +690,26 @@
                         abs.forEach(a => {
                             const d = docents.value.find(x => x.id === a.docent_id);
                             const b = horariEscola.value.find(x => x.id === a.bloc_id);
-                            const nomDocent = d ? d.nom : 'Desconegut';
-                            const nomFranja = b ? b.nom : 'Desconegut';
+                            const nomFranja = b ? b.nom : 'Franja desconeguda';
+                            
+                            const assignacioBase = assignacionsHorari.value.find(asig => asig.docent_id === a.docent_id && asig.dia === diesSetmana[i] && asig.bloc_id === a.bloc_id);
+                            const nomAssignatura = assignacioBase && assignacioBase.grup ? assignacioBase.grup : 'Classe pendent';
+                            
+                            const formatHoraClasse = `${nomFranja} a ${nomAssignatura}`;
                             
                             if(a.assignacions && a.assignacions.length > 0) {
-                                a.assignacions.forEach(assig => {
-                                    textSubst += `${nomDocent} absència ${nomFranja} - Cobreix: ${assig.nomSubstitut}\n`;
-                                });
+                                a.assignacions.forEach(assig => { textSubst += `${formatHoraClasse} - (${assig.nomSubstitut})\n`; });
                             } else {
-                                textSubst += `${nomDocent} absència ${nomFranja} - PENDENT DE COBRIR\n`;
+                                textSubst += `${formatHoraClasse} - (PENDENT)\n`;
                             }
                         });
-                        
-                        if(diesWhatsapp.value[i].tasks.trim() !== '') {
-                            diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
-                        } else {
-                            diesWhatsapp.value[i].tasks = textSubst.trim();
-                        }
+                        if(diesWhatsapp.value[i].tasks.trim() !== '') diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
+                        else diesWhatsapp.value[i].tasks = textSubst.trim();
                     }
                 }
-                
-                alert("S'han importat les absències de la setmana seleccionada.");
                 generarMissatgeWhatsapp();
+                alert("S'han importat les absències de la setmana seleccionada amb èxit.");
             };
-
 
             const nomDiaSetmanaSeleccionat = computed(() => {
                 if(!dataSeleccionada.value) return '';
@@ -690,11 +758,8 @@
                 if(resDocents.data) docents.value = resDocents.data; if(resBlocs.data) horariEscola.value = resBlocs.data;
                 if(resAsig.data) assignacionsHorari.value = resAsig.data; if(resGrups.data) grupsTots.value = resGrups.data;
                 
-                if(resConfig.data && resConfig.data.length > 0) {
-                    categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
-                } else {
-                    categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI'];
-                }
+                if(resConfig.data && resConfig.data.length > 0) { categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
+                } else { categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI']; }
                 if(categoriesDocents.value.length > 0) novaCategoriaMestre.value = categoriesDocents.value[0];
 
                 await carregarAbsenciesMes(); await carregarAbsenciesDia();
@@ -730,31 +795,23 @@
             };
             const tancarSessio = async () => { await db.auth.signOut(); usuariAutenticat.value = false; };
 
-            const guardarCategoriesDB = async () => {
-                await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) });
-            };
+            const guardarCategoriesDB = async () => { await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) }); };
             const afegirCategoria = async () => {
                 const nova = novaCategoria.value.trim();
-                if(nova && !categoriesDocents.value.includes(nova)) {
-                    categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB();
-                }
+                if(nova && !categoriesDocents.value.includes(nova)) { categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB(); }
             };
-            const esborrarCategoria = async (idx) => {
-                categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB();
-            };
+            const esborrarCategoria = async (idx) => { categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB(); };
 
             const afegirGrupsPerDefecte = async () => {
                 const llistaDemanada = ['I3', 'I3 A', 'I3 B', 'I4', 'I4 A', 'I4 B', 'I5', 'I5 A', 'I5 B', '1r', '1r A', '1r B', '2n', '2n A', '2n B', '3r', '3r A', '3r B', '4t', '4t A', '4t B', '5è', '5è A', '5è B', '6è', '6è A', '6è B'];
-                let ordreAct = grupsTots.value.length + 1;
-                let afegits = 0;
+                let ordreAct = grupsTots.value.length + 1; let afegits = 0;
                 for(let nomGrup of llistaDemanada) {
                     if(!grupsTots.value.find(g => g.nom === nomGrup)) {
                         const { data } = await db.from('grups').insert({ nom: nomGrup, ordre: ordreAct++ }).select();
                         if(data) { grupsTots.value.push(data[0]); afegits++; }
                     }
                 }
-                if(afegits > 0) alert(`✅ S'han afegit ${afegits} grups nous automàticament.`);
-                else alert(`Tots els grups per defecte ja estaven creats.`);
+                if(afegits > 0) alert(`✅ S'han afegit ${afegits} grups nous automàticament.`); else alert(`Tots els grups per defecte ja estaven creats.`);
             };
 
             const getAssignacio = (docentId, dia, blocId) => {
@@ -762,41 +819,49 @@
                 return as ? as : { grup: '', materia: '', disponible: false };
             };
 
-            const updateAssignacio = async (docentId, dia, blocId, camp, valor) => {
+            // Canvis Reactius instantanis (Sense esperar l'escriptura de DB)
+            const updateAssignacioLocal = (docentId, dia, blocId, camp, valor) => {
                 let asigIndex = assignacionsHorari.value.findIndex(a => a.docent_id === docentId && a.dia === dia && a.bloc_id === blocId);
                 if (asigIndex !== -1) {
-                    let actualitzat = { ...assignacionsHorari.value[asigIndex], [camp]: valor };
-                    if (actualitzat.grup === '' && (actualitzat.materia || '').trim() === '' && actualitzat.disponible === false) {
-                        await db.from('assignacions').delete().eq('id', actualitzat.id); assignacionsHorari.value.splice(asigIndex, 1);
-                    } else {
-                        await db.from('assignacions').update({ [camp]: valor }).eq('id', actualitzat.id); assignacionsHorari.value[asigIndex] = actualitzat;
-                    }
+                    assignacionsHorari.value[asigIndex][camp] = valor;
                 } else {
-                    let payload = { docent_id: docentId, dia: dia, bloc_id: blocId, grup: '', materia: '', disponible: false }; payload[camp] = valor;
-                    const { data } = await db.from('assignacions').insert(payload).select();
-                    if (data && data.length > 0) assignacionsHorari.value.push(data[0]);
+                    let tempPayload = { docent_id: docentId, dia: dia, bloc_id: blocId, grup: '', materia: '', disponible: false, id: 'temp_' + Date.now() };
+                    tempPayload[camp] = valor;
+                    assignacionsHorari.value.push(tempPayload);
                 }
+            };
+
+            const guardarAssignacioDB = async (docentId, dia, blocId) => {
+                let asigIndex = assignacionsHorari.value.findIndex(a => a.docent_id === docentId && a.dia === dia && a.bloc_id === blocId);
+                if (asigIndex === -1) return;
+                let actualitzat = assignacionsHorari.value[asigIndex];
+                
+                if (actualitzat.grup.trim() === '' && !actualitzat.disponible) {
+                    if (!String(actualitzat.id).startsWith('temp_')) {
+                        await db.from('assignacions').delete().eq('id', actualitzat.id);
+                    }
+                    assignacionsHorari.value.splice(asigIndex, 1);
+                } else {
+                    if (String(actualitzat.id).startsWith('temp_')) {
+                        const { data } = await db.from('assignacions').insert({ docent_id: actualitzat.docent_id, dia: actualitzat.dia, bloc_id: actualitzat.bloc_id, grup: actualitzat.grup, materia: '', disponible: actualitzat.disponible }).select();
+                        if (data && data.length > 0) assignacionsHorari.value[asigIndex] = data[0];
+                    } else {
+                        await db.from('assignacions').update({ grup: actualitzat.grup, disponible: actualitzat.disponible }).eq('id', actualitzat.id);
+                    }
+                }
+            };
+
+            const toggleComodi = async (docentId, dia, blocId) => {
+                let actual = getAssignacio(docentId, dia, blocId);
+                updateAssignacioLocal(docentId, dia, blocId, 'disponible', !actual.disponible);
+                await guardarAssignacioDB(docentId, dia, blocId);
             };
 
             const aplicarPinzell = async (dia, blocId) => {
                 if(!modePinzell.value) return;
-                let actual = assignacionsHorari.value.find(a => a.docent_id === mestreSeleccionatHorari.value && a.dia === dia && a.bloc_id === blocId);
-                let textAGuardar = textPinzell.value.trim();
-                let comodiAGuardar = comodiPinzell.value;
-                
-                if (actual) {
-                    if (textAGuardar === '' && !comodiAGuardar) {
-                        await db.from('assignacions').delete().eq('id', actual.id); 
-                        assignacionsHorari.value = assignacionsHorari.value.filter(a => a.id !== actual.id);
-                    } else {
-                        await db.from('assignacions').update({ grup: textAGuardar, disponible: comodiAGuardar }).eq('id', actual.id); 
-                        let idx = assignacionsHorari.value.findIndex(a => a.id === actual.id); 
-                        assignacionsHorari.value[idx].grup = textAGuardar; assignacionsHorari.value[idx].disponible = comodiAGuardar;
-                    }
-                } else if(textAGuardar !== '' || comodiAGuardar) {
-                    const { data } = await db.from('assignacions').insert({docent_id: mestreSeleccionatHorari.value, dia: dia, bloc_id: blocId, grup: textAGuardar, materia: '', disponible: comodiAGuardar}).select();
-                    if (data) assignacionsHorari.value.push(data[0]);
-                }
+                updateAssignacioLocal(mestreSeleccionatHorari.value, dia, blocId, 'grup', textPinzell.value.trim());
+                updateAssignacioLocal(mestreSeleccionatHorari.value, dia, blocId, 'disponible', comodiPinzell.value);
+                await guardarAssignacioDB(mestreSeleccionatHorari.value, dia, blocId);
             };
 
             const processarEntradaManual = async () => {
@@ -817,8 +882,9 @@
                         const blocMatch = horariEscola.value.find(b => b.nom.toLowerCase().includes(strHora));
 
                         if(diaMatch && blocMatch) {
-                            await updateAssignacio(mestreSeleccionatHorari.value, diaMatch, blocMatch.id, 'grup', strGrup);
-                            if(esComodi) await updateAssignacio(mestreSeleccionatHorari.value, diaMatch, blocMatch.id, 'disponible', true);
+                            updateAssignacioLocal(mestreSeleccionatHorari.value, diaMatch, blocMatch.id, 'grup', strGrup);
+                            if(esComodi) updateAssignacioLocal(mestreSeleccionatHorari.value, diaMatch, blocMatch.id, 'disponible', true);
+                            await guardarAssignacioDB(mestreSeleccionatHorari.value, diaMatch, blocMatch.id);
                             inserits++;
                         }
                     }
@@ -845,7 +911,19 @@
                 mestreAClonar.value = '';
             };
 
-            const getAssignacionsGrup = (grupId, dia, blocId) => { return assignacionsHorari.value.filter(a => a.grup === grupId && a.dia === dia && a.bloc_id === blocId); };
+            const getAssignacionsGrup = (grupId, dia, blocId) => { 
+                return assignacionsHorari.value.filter(a => {
+                    if (a.dia !== dia || a.bloc_id !== blocId || !a.grup) return false;
+                    const text = a.grup.toLowerCase();
+                    const search = grupId.toLowerCase();
+                    const idx = text.indexOf(search);
+                    if (idx === -1) return false;
+                    
+                    const charSeguent = text[idx + search.length];
+                    if (charSeguent && /[a-z0-9àèéíòóúïü]/i.test(charSeguent)) return false;
+                    return true;
+                }); 
+            };
 
             const afegirMestre = async () => {
                 if(nouMestreNom.value.trim()) {
@@ -941,7 +1019,7 @@
                 nomDiaSetmanaSeleccionat, dataSeleccionadaFormatada, canviarMes, seleccionarData,
                 whatsappCentre, whatsappSetmana, diesWhatsapp, missatgeWhatsappFinal, textBotoCopiarWhatsapp,
                 sincronitzarDatesWhatsapp, netejarDiaWhatsapp, esborrarTotWhatsapp, generarMissatgeWhatsapp, 
-                copiarMissatgeWhatsapp, compartirWhatsapp, importarAbsenciesAWhatsapp,
+                copiarMissatgeWhatsapp, compartirWhatsapp, importarAbsenciesAWhatsapp, updateAssignacioLocal, guardarAssignacioDB, toggleComodi,
                 iniciarSessio, tancarSessio, getAssignacio, updateAssignacio, clonarHorari, getAssignacionsGrup,
                 mestresDisponiblesDiaActual, obtenirNomDocent, obtenirNomBloc, registrarAbsencia, eliminarAbsencia, prepararNovaAssignacio, 
                 confirmarAssignacio, esborrarAssignacio, opcionsDurada, afegirMestre, esborrarMestre, afegirGrup, esborrarGrup, afegirBloc, esborrarBloc
