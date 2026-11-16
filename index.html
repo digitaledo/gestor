@@ -25,7 +25,7 @@
         .dia-seleccionat { background-color: #3b82f6 !important; color: white !important; font-weight: bold; border-radius: 8px; }
         .punt-absencia { width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-top: 2px; }
         .card { box-shadow: 0 4px 15px -5px rgba(0,0,0,.1); transition: border-color 0.2s; }
-        .card:focus-within { border-color: #22c55e; }
+        .card:focus-within { border-color: #3b82f6; }
         .mono { font-variant-ligatures: none; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
         .day-dl { border-left: 4px solid #3b82f6; }
         .day-dm { border-left: 4px solid #10b981; }
@@ -44,7 +44,6 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
 <div id="app" v-cloak>
-    <datalist id="llista-grups"><option v-for="g in llistaGrupsDinamica" :key="g" :value="g"></option></datalist>
     <div v-if="!usuariAutenticat" class="min-h-screen flex items-center justify-center bg-slate-800">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             <div class="text-center mb-6">
@@ -100,7 +99,7 @@
                 <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-200">
                     <h3 class="text-sm font-bold text-gray-800 border-b pb-3 mb-4">Anotar absència pel <span class="text-blue-600">{{ dataSeleccionadaFormatada }}</span></h3>
                     <div class="space-y-4">
-                        <select v-model="novaAbsencia.docent_id" class="w-full border border-gray-300 p-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50">
+                        <select v-model="novaAbsencia.docent_id" class="w-full border border-gray-300 p-2.5 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 max-h-48 overflow-y-auto">
                             <option value="" disabled>Selecciona docent absent...</option>
                             <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id">{{ d.nom }}</option></optgroup>
                         </select>
@@ -165,7 +164,7 @@
                                                 <select v-model="assignacioEnCurs.durada" class="border border-gray-300 rounded-lg text-sm p-2 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
                                                     <option v-for="opt in opcionsDurada(abs.minuts_pendents)" :key="opt" :value="opt">{{ opt }} min.</option>
                                                 </select>
-                                                <select v-model="assignacioEnCurs.substitut" class="border border-gray-300 rounded-lg text-sm p-2 flex-1 font-medium bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                                <select v-model="assignacioEnCurs.substitut" class="border border-gray-300 rounded-lg text-sm p-2 flex-1 font-medium bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none max-h-48 overflow-y-auto">
                                                     <option value="" disabled>Selecciona docent...</option>
                                                     <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d">{{ d.nom }}</option></optgroup>
                                                 </select>
@@ -194,14 +193,14 @@
                     <div class="flex flex-wrap items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
                         <div class="flex items-center gap-2">
                             <span class="font-bold text-sm text-gray-700">Editar horari de:</span>
-                            <select v-model="mestreSeleccionatHorari" class="w-64 border border-blue-300 p-2 text-sm rounded-lg bg-blue-50 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <select v-model="mestreSeleccionatHorari" class="w-64 border border-blue-300 p-2 text-sm rounded-lg bg-blue-50 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none max-h-48 overflow-y-auto">
                                 <option value="" disabled>-- Tria un docent --</option>
                                 <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id">{{ d.nom }}</option></optgroup>
                             </select>
                         </div>
                         <div v-if="mestreSeleccionatHorari" class="ml-auto flex items-center gap-2 bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
                             <span class="text-xs text-yellow-800 font-bold"><i class="fa-regular fa-copy mr-1"></i> Clonar de:</span>
-                            <select v-model="mestreAClonar" class="border border-yellow-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-yellow-500">
+                            <select v-model="mestreAClonar" class="border border-yellow-300 p-1.5 rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-yellow-500 max-h-48 overflow-y-auto">
                                 <option value="" disabled>Tria un company...</option>
                                 <optgroup v-for="(mestres, cat) in docentsAgrupats" :label="cat"><option v-for="d in mestres" :key="d.id" :value="d.id" v-show="d.id !== mestreSeleccionatHorari">{{ d.nom }}</option></optgroup>
                             </select>
@@ -269,10 +268,10 @@
                     </div>
                 </div>
                 <div v-if="modeHorari === 'grup'" class="space-y-4">
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 inline-block mb-2">
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 inline-block mb-2 w-full sm:w-auto">
                         <div class="flex items-center gap-3">
                             <span class="font-bold text-sm text-gray-700">Veure horari de la classe:</span>
-                            <select v-model="grupSeleccionatHorari" class="w-64 border border-green-300 p-2 text-sm rounded-lg bg-green-50 font-bold focus:ring-2 focus:ring-green-500 focus:outline-none">
+                            <select v-model="grupSeleccionatHorari" class="w-64 border border-green-300 p-2 text-sm rounded-lg bg-green-50 font-bold focus:ring-2 focus:ring-green-500 focus:outline-none scroll-elegant" style="max-height: 250px;">
                                 <option value="" disabled>-- Selecciona classe --</option>
                                 <option v-for="g in llistaGrupsDinamica" :key="g" :value="g">{{ g }}</option>
                             </select>
@@ -293,7 +292,18 @@
                                                 </span>
                                                 <textarea :value="asig.grup" @input="updateAssignacioLocal(asig.docent_id, asig.dia, asig.bloc_id, 'grup', $event.target.value)" @blur="guardarAssignacioDB(asig.docent_id, asig.dia, asig.bloc_id)" class="w-full border border-green-200 rounded bg-white p-1 text-xs text-gray-700 resize-none focus:ring-1 focus:ring-green-500 outline-none" rows="2"></textarea>
                                             </div>
+                                            <!-- Nou requadre per anotacions pròpies de la classe, independents dels docents -->
                                             <textarea :value="getAssignacioClasse(grupSeleccionatHorari, dia, b.id).materia" @input="updateAssignacioClasseLocal(grupSeleccionatHorari, dia, b.id, $event.target.value)" @blur="guardarAssignacioClasseDB(grupSeleccionatHorari, dia, b.id)" placeholder="+ Afegir anotació a la classe..." class="w-full border border-dashed border-gray-300 rounded-lg p-2 text-xs text-gray-700 bg-gray-50 hover:bg-white focus:bg-white focus:border-green-400 shadow-sm resize-none focus:ring-1 focus:ring-green-400 outline-none flex-1 min-h-[3rem] transition"></textarea>
+                                            
+                                            <!-- SUBSTITUCIONS ACTIVES A LA CLASSE (TEMPORALS DEL DIA SELECCIONAT) -->
+                                            <div v-for="subs in getSubstitucionsGrupActual(grupSeleccionatHorari, dia, b.id)" :key="subs.id" class="bg-blue-50 border border-blue-200 rounded-lg p-2 shadow-sm mt-1">
+                                                <span class="font-bold text-blue-900 block text-[10px] mb-0.5 uppercase tracking-wide flex justify-between">
+                                                    <span><i class="fa-solid fa-arrow-turn-up fa-rotate-90 mr-1 text-blue-400"></i>Substitut</span>
+                                                    <span class="text-blue-500">{{ subs.durada }}'</span>
+                                                </span>
+                                                <span class="text-sm font-black text-blue-800">{{ subs.nomSubstitut }}</span>
+                                                <span class="text-[10px] text-blue-600 block leading-tight mt-0.5">Cobreix a: {{ obtenirNomDocent(subs.docentAbsent) }}</span>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -332,16 +342,16 @@
                       </div>
                       <div class="space-y-4 flex-1">
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
-                            <textarea v-model="d.tasks" rows="5" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
+                            <textarea v-model="d.tasks" rows="5" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition scroll-elegant" placeholder="..."></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
-                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🚌 ..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
+                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition scroll-elegant" placeholder="🚌 ..."></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Altres</label>
-                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🎉 ..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Altres</label>
+                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition scroll-elegant" placeholder="🎉 ..."></textarea>
                         </div>
                       </div>
                       <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
@@ -360,16 +370,16 @@
                       </div>
                       <div class="space-y-4 flex-1">
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
-                            <textarea v-model="d.tasks" rows="5" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
+                            <textarea v-model="d.tasks" rows="5" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition scroll-elegant" placeholder="..."></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
-                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🚌 ..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
+                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition scroll-elegant" placeholder="🚌 ..."></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Altres</label>
-                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🎉 ..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Altres</label>
+                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition scroll-elegant" placeholder="🎉 ..."></textarea>
                         </div>
                       </div>
                       <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
@@ -382,7 +392,7 @@
                 </div>
                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-200 flex flex-col lg:flex-row gap-8">
                   <div class="flex-1">
-                    <textarea v-model="missatgeWhatsappFinal" class="mono w-full h-full min-h-[300px] rounded-xl border border-gray-300 p-5 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-colors text-sm shadow-inner" placeholder="Clica 'Genera el missatge' per previsualitzar-lo aquí..."></textarea>
+                    <textarea v-model="missatgeWhatsappFinal" class="mono w-full h-full min-h-[300px] rounded-xl border border-gray-300 p-5 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-colors text-sm shadow-inner scroll-elegant" placeholder="Clica 'Genera el missatge' per previsualitzar-lo aquí..."></textarea>
                   </div>
                   <div class="w-full lg:w-64 flex flex-col gap-4 justify-center">
                       <button @click="generarMissatgeWhatsapp" class="w-full rounded-xl px-4 py-3 bg-gray-800 text-white font-bold hover:bg-gray-900 transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-arrows-rotate"></i> Genera el missatge</button>
@@ -480,6 +490,7 @@
     const supabaseKey = 'sb_publishable_ClCEaeNVMXGmcHPaI0SovQ_evESUl1o';
     const db = window.supabase.createClient(supabaseUrl, supabaseKey);
     const { createApp, ref, computed, onMounted, watch } = Vue;
+
     const app = createApp({
         setup() {
             const usuariAutenticat = ref(false);
@@ -500,6 +511,7 @@
             const mestreSeleccionatHorari = ref(''); const mestreAClonar = ref(''); const grupSeleccionatHorari = ref(''); 
             const modePinzell = ref(false); const textPinzell = ref(''); const comodiPinzell = ref(false); const textEntradaManual = ref('');
             const novaCategoriaMestre = ref(''); const nouMestreNom = ref(''); const nouGrupNom = ref(''); const nouBlocNom = ref(''); const nouBlocMinuts = ref('90');
+
             const whatsappCentre = ref(''); const whatsappSetmana = ref(''); const missatgeWhatsappFinal = ref(''); const textBotoCopiarWhatsapp = ref('Copia');
             const diesWhatsapp = ref([
                 { id: 'dl', label: 'Dilluns', emoji: '📘', dayIdx: 1, data: '', tasks: '', outings: '', extra: '', incloure: true },
@@ -624,7 +636,7 @@
                             if(a.assignacions && a.assignacions.length > 0) {
                                 a.assignacions.forEach(assig => { textSubst += '👩‍🏫 ' + nomFranja + ' - ' + nomAssignatura + ' (' + assig.nomSubstitut + ')\n'; });
                             } else {
-                                textSubst += '👩‍🏫 ' + nomFranja + ' - ' + nomAssignatura + ' (Pendent)\n';
+                                textSubst += '👩‍🏫 ' + nomFranja + ' - ' + nomAssignatura + ' (PENDENT)\n';
                             }
                         });
                         if(diesWhatsapp.value[i].tasks.trim() !== '') diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
@@ -663,8 +675,9 @@
             };
             const seleccionarData = async (dataStr) => { dataSeleccionada.value = dataStr; await carregarAbsenciesDia(); };
 
+            // Modificació de llistaGrupsDinamica per ordenar correctament I3, 1r, 2n... sense perdre l'ordre d'escola
             const llistaGrupsDinamica = computed(() => {
-                return grupsTots.value.map(g => g.nom).sort();
+                return grupsTots.value.map(g => g.nom);
             });
             
             const docentsAgrupats = computed(() => {
@@ -867,14 +880,40 @@
                 return assignacionsHorari.value.filter(a => {
                     if (a.docent_id === null) return false;
                     if (a.dia !== dia || a.bloc_id !== blocId || !a.grup) return false;
-                    const text = a.grup.toLowerCase();
-                    const search = grupId.toLowerCase();
-                    const idx = text.indexOf(search);
-                    if (idx === -1) return false;
-                    const charSeguent = text[idx + search.length];
-                    if (charSeguent && /[a-z0-9àèéíòóúïü]/i.test(charSeguent)) return false;
-                    return true;
+                    const text = ' ' + a.grup.toLowerCase() + ' ';
+                    const search = ' ' + grupId.toLowerCase() + ' ';
+                    return text.includes(search);
                 }); 
+            };
+
+            // Nova funció per vincular el substitut amb la classe
+            const getSubstitucionsGrupActual = (grupId, dia, blocId) => {
+                // Primer: el dia a la pestanya 'tauler' ha de quadrar amb el dia de la graella (dilluns, dimarts...)
+                const partesDataSelect = dataSeleccionada.value.split('-'); 
+                const dataSelectObject = new Date(partesDataSelect[0], partesDataSelect[1] - 1, partesDataSelect[2]);
+                const diaSelectText = nomsDiesSetmana[dataSelectObject.getDay()];
+                
+                if (dia !== diaSelectText) return [];
+                
+                let subs = [];
+                // Mirem les absències apuntades AVUI en AQUESTA FRANJA
+                llistaAbsencies.value.filter(a => a.bloc_id === blocId).forEach(absencia => {
+                    if (absencia.assignacions && absencia.assignacions.length > 0) {
+                        // El mestre que falta feia classe en aquest grup avui?
+                        const feiaGrup = getAssignacionsGrupDocents(grupId, dia, blocId).find(a => a.docent_id === absencia.docent_id);
+                        if (feiaGrup) {
+                            absencia.assignacions.forEach(assig => {
+                                subs.push({
+                                    id: assig.substitutId + '_' + absencia.id,
+                                    nomSubstitut: assig.nomSubstitut,
+                                    docentAbsent: absencia.docent_id,
+                                    durada: assig.durada
+                                });
+                            });
+                        }
+                    }
+                });
+                return subs;
             };
 
             const afegirMestre = async () => {
@@ -971,13 +1010,19 @@
                 whatsappCentre, whatsappSetmana, diesWhatsapp, missatgeWhatsappFinal, textBotoCopiarWhatsapp,
                 sincronitzarDatesWhatsapp, netejarDiaWhatsapp, esborrarTotWhatsapp, generarMissatgeWhatsapp, 
                 copiarMissatgeWhatsapp, compartirWhatsapp, importarAbsenciesAWhatsapp, updateAssignacioLocal, guardarAssignacioDB, toggleComodi,
-                updateAssignacioClasseLocal, guardarAssignacioClasseDB, getAssignacioClasse, getAssignacionsGrupDocents,
+                updateAssignacioClasseLocal, guardarAssignacioClasseDB, getAssignacioClasse, getAssignacionsGrupDocents, getSubstitucionsGrupActual,
                 iniciarSessio, tancarSessio, getAssignacio, clonarHorari, 
                 mestresDisponiblesDiaActual, obtenirNomDocent, obtenirNomBloc, registrarAbsencia, eliminarAbsencia, prepararNovaAssignacio, 
                 confirmarAssignacio, esborrarAssignacio, opcionsDurada, afegirMestre, esborrarMestre, afegirGrup, esborrarGrup, afegirBloc, esborrarBloc
             }
         }
     });
+
+    app.config.errorHandler = (err, instance, info) => {
+        console.error(err);
+        document.body.innerHTML = '<div style="max-width:600px; margin:50px auto; background:#fee2e2; border:2px solid #ef4444; padding:20px; border-radius:8px; color:#991b1b; font-family:sans-serif;"><h2 style="font-size:1.5rem; font-weight:bold; margin-bottom:10px;">🚨 Error intern de Vue</h2><div style="background:white; padding:10px; margin-top:10px; font-family:monospace; border:1px solid #fca5a5;">' + err.message + '</div><p style="margin-top:10px; font-size:0.8rem;">Info: ' + info + '</p></div>';
+    };
+
     app.mount('#app');
 </script>
 </body>
