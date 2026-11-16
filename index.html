@@ -7,7 +7,7 @@
     <script>
         window.onerror = function(msg, url, line) {
             if (msg.includes('Script error') || line === 0) return true;
-            document.body.innerHTML = '<div style="max-width:600px; margin:50px auto; background:#fee2e2; border:2px solid #ef4444; padding:20px; border-radius:8px; color:#991b1b; font-family:sans-serif;"><h2 style="font-size:1.5rem; font-weight:bold; margin-bottom:10px;">🚨 Error intern de Javascript</h2><div style="background:white; padding:10px; margin-top:10px; font-family:monospace; border:1px solid #fca5a5;">' + msg + ' (Línia: ' + line + ')</div></div>';
+            document.body.innerHTML = '<div style="max-width:600px; margin:50px auto; background:#fee2e2; border:2px solid #ef4444; padding:20px; border-radius:8px; color:#991b1b; font-family:sans-serif;"><h2 style="font-size:1.5rem; font-weight:bold; margin-bottom:10px;">🚨 Error intern</h2><div style="background:white; padding:10px; margin-top:10px; font-family:monospace; border:1px solid #fca5a5;">' + msg + ' (Línia: ' + line + ')</div></div>';
             return false;
         };
     </script>
@@ -24,8 +24,8 @@
         .dia-calendari:hover { background-color: #dbeafe; }
         .dia-seleccionat { background-color: #3b82f6 !important; color: white !important; font-weight: bold; border-radius: 8px; }
         .punt-absencia { width: 6px; height: 6px; background-color: #ef4444; border-radius: 50%; display: inline-block; margin-top: 2px; }
-        .card { box-shadow: 0 4px 15px -5px rgba(0,0,0,.1); transition: border-color 0.2s; }
-        .card:focus-within { border-color: #3b82f6; }
+        .card { box-shadow: 0 10px 25px -10px rgba(0,0,0,.15); transition: border-color 0.2s; }
+        .card:focus-within { border-color: #58ACA6; }
         .mono { font-variant-ligatures: none; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
         .day-dl { border-left: 4px solid #3b82f6; }
         .day-dm { border-left: 4px solid #10b981; }
@@ -44,7 +44,6 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
 <div id="app" v-cloak>
-    <datalist id="llista-grups"><option v-for="g in llistaGrupsDinamica" :key="g" :value="g"></option></datalist>
     <div v-if="!usuariAutenticat" class="min-h-screen flex items-center justify-center bg-slate-800">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
             <div class="text-center mb-6">
@@ -92,7 +91,7 @@
                     <div class="grid grid-cols-7 gap-1 text-center text-sm">
                         <div v-for="buit in espaisBuitsCalendari" :key="'b'+buit"></div>
                         <div v-for="dia in diesDelMes" :key="dia.data" @click="seleccionarData(dia.data)" :class="{'dia-seleccionat shadow-md': dia.data === dataSeleccionada}" class="dia-calendari p-1.5 rounded-lg flex flex-col items-center justify-center h-10 border border-transparent hover:border-gray-200 text-gray-700">
-                            <span :class="{'text-blue-600 font-black': dia.esAvui}">{{ dia.numero }}</span>
+                            <span :class="{'text-blue-600 font-black': dia.esAvui && dia.data !== dataSeleccionada, 'text-white font-black': dia.data === dataSeleccionada}">{{ dia.numero }}</span>
                             <span v-if="dia.teAbsencies" class="punt-absencia"></span>
                         </div>
                     </div>
@@ -286,7 +285,7 @@
                                     <td class="font-bold text-xs bg-gray-50 text-center text-gray-600 align-middle">{{ b.nom }}</td>
                                     <td v-for="dia in diesSetmana" :key="dia" class="align-top bg-white p-2">
                                         <div class="flex flex-col gap-1.5 h-full">
-                                            <div v-if="getAssignacionsGrup(grupSeleccionatHorari, dia, b.id).length === 0" class="text-xs text-gray-400 italic text-center py-6 border-2 border-dashed border-gray-100 rounded-lg">Sense mestre</div>
+                                            <div v-if="getAssignacionsGrup(grupSeleccionatHorari, dia, b.id).length === 0" class="text-xs text-gray-400 italic text-center py-6 border-2 border-dashed border-gray-100 rounded-lg">Lliure</div>
                                             <div v-for="asig in getAssignacionsGrup(grupSeleccionatHorari, dia, b.id)" :key="asig.id" class="bg-green-50 border border-green-200 rounded-lg p-2.5 shadow-sm">
                                                 <span class="font-bold text-green-900 block border-b border-green-200/50 pb-1 mb-1">{{ obtenirNomDocent(asig.docent_id) }}</span>
                                                 <span class="text-gray-700 whitespace-pre-wrap text-xs">{{ asig.grup }}</span>
@@ -302,7 +301,7 @@
         </main>
         <main v-if="vistaActual === 'whatsapp'" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
-                <header class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 border-b border-gray-100 pb-6">
+                <header class="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4 border-b border-gray-100 pb-6">
                   <div>
                     <h2 class="text-2xl font-bold tracking-tight text-gray-800"><i class="fa-brands fa-whatsapp text-green-500 mr-2 text-3xl align-middle"></i> Generador de WhatsApp</h2>
                     <p class="text-gray-500 text-sm mt-1">Crea el missatge de planificació setmanal per enviar a la resta del claustre.</p>
@@ -312,7 +311,7 @@
                     <input v-model="whatsappSetmana" type="text" placeholder="Setmana (ex. 8-12 set)" class="w-full sm:w-48 rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50"/>
                   </div>
                 </header>
-                <div class="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                <div class="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
                     <div>
                         <h4 class="font-bold text-blue-900 flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-down text-lg"></i> Importar substitucions automàticament</h4>
                         <p class="text-xs text-blue-700 mt-1 max-w-2xl">Carrega totes les substitucions que estiguin anotades al <b>Tauler diari</b> per la setmana que tinguis seleccionada a sota. Generarà el text net assignatura per assignatura.</p>
@@ -321,39 +320,68 @@
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Absorbeix la setmana
                     </button>
                 </div>
-                <div class="grid md:grid-cols-2 xl:grid-cols-5 gap-5 mb-8">
-                    <div v-for="d in diesWhatsapp" :key="d.id" :class="'day-'+d.id" class="card rounded-2xl bg-white p-4 border border-gray-200 flex flex-col">
-                      <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-2 mb-3">
-                        <h3 class="font-bold text-gray-800 text-base">{{ d.label }} {{ d.emoji }}</h3>
-                        <input type="date" v-model="d.data" @change="sincronitzarDatesWhatsapp(d)" class="rounded-lg border border-gray-300 px-2 py-1 text-xs text-gray-600 focus:ring-2 focus:ring-green-500 outline-none w-full xl:w-auto"/>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+                    <div v-for="(d, index) in diesWhatsapp.slice(0, 3)" :key="d.id" :class="'day-'+d.id" class="card rounded-2xl bg-white p-5 border border-gray-200 flex flex-col">
+                      <div class="flex items-center justify-between gap-2 mb-4">
+                        <h3 class="font-bold text-gray-800 text-lg">{{ d.label }} {{ d.emoji }}</h3>
+                        <input type="date" v-model="d.data" @change="sincronitzarDatesWhatsapp(d)" class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-600 focus:ring-2 focus:ring-green-500 outline-none w-36"/>
                       </div>
-                      <div class="space-y-3 flex-1">
+                      <div class="space-y-4 flex-1">
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
-                            <textarea v-model="d.tasks" rows="4" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-none transition" placeholder="..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
+                            <textarea v-model="d.tasks" rows="5" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="..."></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
-                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-none transition" placeholder="🚌 ..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
+                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🚌 ..."></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Altres</label>
-                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-xs focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-none transition" placeholder="🎉 ..."></textarea>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Altres</label>
+                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🎉 ..."></textarea>
                         </div>
                       </div>
-                      <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                        <label class="text-xs font-bold text-gray-600 inline-flex items-center gap-2 cursor-pointer hover:text-green-600 transition">
+                      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                        <label class="text-sm font-bold text-gray-600 inline-flex items-center gap-2 cursor-pointer hover:text-green-600 transition">
                           <input type="checkbox" v-model="d.incloure" class="rounded text-green-500 focus:ring-green-500 w-4 h-4"> Incloure
                         </label>
-                        <button @click="netejarDiaWhatsapp(d)" class="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors p-1"><i class="fa-solid fa-eraser mr-1"></i> Neteja</button>
+                        <button @click="netejarDiaWhatsapp(d)" class="text-sm font-bold text-gray-400 hover:text-red-500 transition-colors p-1"><i class="fa-solid fa-eraser mr-1"></i> Neteja</button>
                       </div>
                     </div>
                 </div>
-                <div class="bg-gray-50 rounded-2xl p-5 md:p-6 border border-gray-200 flex flex-col lg:flex-row gap-6">
+                <div class="grid md:grid-cols-2 gap-5 mb-8 lg:w-2/3 mx-auto">
+                    <div v-for="(d, index) in diesWhatsapp.slice(3, 5)" :key="d.id" :class="'day-'+d.id" class="card rounded-2xl bg-white p-5 border border-gray-200 flex flex-col">
+                      <div class="flex items-center justify-between gap-2 mb-4">
+                        <h3 class="font-bold text-gray-800 text-lg">{{ d.label }} {{ d.emoji }}</h3>
+                        <input type="date" v-model="d.data" @change="sincronitzarDatesWhatsapp(d)" class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-600 focus:ring-2 focus:ring-green-500 outline-none w-36"/>
+                      </div>
+                      <div class="space-y-4 flex-1">
+                        <div>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Substitucions / Tasques</label>
+                            <textarea v-model="d.tasks" rows="5" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="..."></textarea>
+                        </div>
+                        <div>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Sortides</label>
+                            <textarea v-model="d.outings" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🚌 ..."></textarea>
+                        </div>
+                        <div>
+                            <label class="text-xs uppercase font-bold text-gray-400 mb-1 block">Altres</label>
+                            <textarea v-model="d.extra" rows="2" class="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:bg-white focus:border-green-400 focus:ring-1 focus:ring-green-400 outline-none resize-y transition" placeholder="🎉 ..."></textarea>
+                        </div>
+                      </div>
+                      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                        <label class="text-sm font-bold text-gray-600 inline-flex items-center gap-2 cursor-pointer hover:text-green-600 transition">
+                          <input type="checkbox" v-model="d.incloure" class="rounded text-green-500 focus:ring-green-500 w-4 h-4"> Incloure
+                        </label>
+                        <button @click="netejarDiaWhatsapp(d)" class="text-sm font-bold text-gray-400 hover:text-red-500 transition-colors p-1"><i class="fa-solid fa-eraser mr-1"></i> Neteja</button>
+                      </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-2xl p-6 border border-gray-200 flex flex-col lg:flex-row gap-8">
                   <div class="flex-1">
-                    <textarea v-model="missatgeWhatsappFinal" class="mono w-full h-full min-h-[250px] rounded-xl border border-gray-300 p-5 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-colors text-sm shadow-inner" placeholder="Clica 'Genera el missatge' per previsualitzar-lo aquí..."></textarea>
+                    <textarea v-model="missatgeWhatsappFinal" class="mono w-full h-full min-h-[300px] rounded-xl border border-gray-300 p-5 bg-white focus:ring-2 focus:ring-green-500 outline-none transition-colors text-sm shadow-inner" placeholder="Clica 'Genera el missatge' per previsualitzar-lo aquí..."></textarea>
                   </div>
-                  <div class="w-full lg:w-64 flex flex-col gap-3 justify-center">
+                  <div class="w-full lg:w-64 flex flex-col gap-4 justify-center">
                       <button @click="generarMissatgeWhatsapp" class="w-full rounded-xl px-4 py-3 bg-gray-800 text-white font-bold hover:bg-gray-900 transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-arrows-rotate"></i> Genera el missatge</button>
                       <div class="h-px bg-gray-200 my-2"></div>
                       <button @click="copiarMissatgeWhatsapp" class="w-full rounded-xl px-4 py-3 bg-green-100 text-green-800 border border-green-300 font-bold hover:bg-green-200 transition-all flex items-center justify-center gap-2">
@@ -444,12 +472,10 @@
         </main>
     </div>
 </div>
-
 <script>
     const supabaseUrl = 'https://eibqxjxfhcsyzdhftmit.supabase.co';
     const supabaseKey = 'sb_publishable_ClCEaeNVMXGmcHPaI0SovQ_evESUl1o';
     const db = window.supabase.createClient(supabaseUrl, supabaseKey);
-
     const { createApp, ref, computed, onMounted, watch } = Vue;
 
     const app = createApp({
@@ -457,41 +483,23 @@
             const usuariAutenticat = ref(false);
             const correu = ref(''); const contrasenya = ref(''); const errorLogin = ref('');
             const vistaActual = ref('tauler'); const modeHorari = ref('mestre');
-            
             const obtenirDataAvuiString = () => {
                 const ara = new Date(); return ara.getFullYear() + '-' + String(ara.getMonth() + 1).padStart(2, '0') + '-' + String(ara.getDate()).padStart(2, '0');
             };
-            
             const dataSeleccionada = ref(obtenirDataAvuiString());
             const mesActual = ref(new Date().getMonth()); const anyActual = ref(new Date().getFullYear());
             const nomsDiesSetmana = ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'];
             const diesSetmana = ['Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres'];
-            
-            const categoriesDocents = ref([]);
-            const novaCategoria = ref('');
-
+            const categoriesDocents = ref([]); const novaCategoria = ref('');
             const docents = ref([]); const horariEscola = ref([]); const assignacionsHorari = ref([]);
             const llistaAbsencies = ref([]); const grupsTots = ref([]); const absenciesMes = ref([]); 
             const novaAbsencia = ref({ docent_id: '', franges: [] });
             const assignacioEnCurs = ref({ absenciaId: null, durada: null, substitut: '' });
-            
             const mestreSeleccionatHorari = ref(''); const mestreAClonar = ref(''); const grupSeleccionatHorari = ref(''); 
-            
-            const modePinzell = ref(false);
-            const textPinzell = ref('');
-            const comodiPinzell = ref(false);
-            const textEntradaManual = ref('');
+            const modePinzell = ref(false); const textPinzell = ref(''); const comodiPinzell = ref(false); const textEntradaManual = ref('');
+            const novaCategoriaMestre = ref(''); const nouMestreNom = ref(''); const nouGrupNom = ref(''); const nouBlocNom = ref(''); const nouBlocMinuts = ref('60');
 
-            const novaCategoriaMestre = ref('');
-            const nouMestreNom = ref('');
-            const nouGrupNom = ref('');
-            const nouBlocNom = ref(''); 
-            const nouBlocMinuts = ref('60');
-
-            const whatsappCentre = ref('');
-            const whatsappSetmana = ref('');
-            const missatgeWhatsappFinal = ref('');
-            const textBotoCopiarWhatsapp = ref('Copia');
+            const whatsappCentre = ref(''); const whatsappSetmana = ref(''); const missatgeWhatsappFinal = ref(''); const textBotoCopiarWhatsapp = ref('Copia');
             const diesWhatsapp = ref([
                 { id: 'dl', label: 'Dilluns', emoji: '📘', dayIdx: 1, data: '', tasks: '', outings: '', extra: '', incloure: true },
                 { id: 'dm', label: 'Dimarts', emoji: '📗', dayIdx: 2, data: '', tasks: '', outings: '', extra: '', incloure: true },
@@ -511,46 +519,32 @@
             });
 
             watch([whatsappCentre, whatsappSetmana, diesWhatsapp], () => {
-                const dades = {
-                    centre: whatsappCentre.value,
-                    setmana: whatsappSetmana.value,
-                    dies: diesWhatsapp.value
-                };
+                const dades = { centre: whatsappCentre.value, setmana: whatsappSetmana.value, dies: diesWhatsapp.value };
                 localStorage.setItem('gestor_whatsapp_dades', JSON.stringify(dades));
             }, { deep: true });
 
             const sincronitzarDatesWhatsapp = (diaModificat) => {
                 const selectedDate = new Date(diaModificat.data);
                 if (isNaN(selectedDate)) return;
-                
                 const actualDayIndex = selectedDate.getDay(); 
                 if (actualDayIndex !== diaModificat.dayIdx) {
                     if (confirm('La data no és un ' + diaModificat.label + '. Vols ajustar-la al ' + diaModificat.label + ' d\'aquella setmana?')) {
                         const diff = diaModificat.dayIdx - (actualDayIndex === 0 ? 7 : actualDayIndex);
                         selectedDate.setDate(selectedDate.getDate() + diff);
-                    } else { 
-                        return; 
-                    }
+                    } else { return; }
                 }
-
                 const mondayBase = new Date(selectedDate);
                 mondayBase.setDate(selectedDate.getDate() - (diaModificat.dayIdx - 1));
-
                 diesWhatsapp.value.forEach((d, idx) => {
-                    const syncDate = new Date(mondayBase);
-                    syncDate.setDate(mondayBase.getDate() + idx);
+                    const syncDate = new Date(mondayBase); syncDate.setDate(mondayBase.getDate() + idx);
                     d.data = syncDate.toISOString().split('T')[0];
                 });
             };
 
-            const netejarDiaWhatsapp = (dia) => {
-                dia.tasks = ''; dia.outings = ''; dia.extra = '';
-            };
-
+            const netejarDiaWhatsapp = (dia) => { dia.tasks = ''; dia.outings = ''; dia.extra = ''; };
             const esborrarTotWhatsapp = () => {
                 if(confirm('Esborrar totes les dades del generador de Whatsapp?')) { 
-                    whatsappCentre.value = '';
-                    whatsappSetmana.value = '';
+                    whatsappCentre.value = ''; whatsappSetmana.value = '';
                     diesWhatsapp.value.forEach(d => { d.data = ''; d.tasks = ''; d.outings = ''; d.extra = ''; d.incloure = true; });
                     missatgeWhatsappFinal.value = '';
                 }
@@ -596,35 +590,24 @@
                     await navigator.clipboard.writeText(missatgeWhatsappFinal.value);
                     textBotoCopiarWhatsapp.value = '✅ Copiat!';
                     setTimeout(() => { textBotoCopiarWhatsapp.value = 'Copia'; }, 2000);
-                } catch(err) {
-                    alert('Error al copiar el text');
-                }
+                } catch(err) { alert('Error al copiar el text'); }
             };
 
             const compartirWhatsapp = () => {
                 if(!missatgeWhatsappFinal.value) generarMissatgeWhatsapp();
                 const text = missatgeWhatsappFinal.value;
-                if (navigator.share) {
-                    navigator.share({ text }).catch(()=>{});
-                } else {
-                    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
-                }
+                if (navigator.share) { navigator.share({ text }).catch(()=>{});
+                } else { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); }
             };
 
             const importarAbsenciesAWhatsapp = async () => {
                 let dataRefStr = diesWhatsapp.value[0].data;
-                if(!dataRefStr) {
-                    alert("Si us plau, selecciona una data a la casella de 'Dilluns' del Whatsapp per saber quina setmana vols importar.");
-                    return;
-                }
-                
+                if(!dataRefStr) { alert("Si us plau, selecciona una data a la casella de 'Dilluns' del Whatsapp per saber quina setmana vols importar."); return; }
                 const dataInicial = new Date(dataRefStr);
                 
                 for(let i=0; i<5; i++) {
-                    const dataDia = new Date(dataInicial);
-                    dataDia.setDate(dataInicial.getDate() + i);
+                    const dataDia = new Date(dataInicial); dataDia.setDate(dataInicial.getDate() + i);
                     const dataStrSql = dataDia.getFullYear() + '-' + String(dataDia.getMonth() + 1).padStart(2, '0') + '-' + String(dataDia.getDate()).padStart(2, '0');
-                    
                     const { data: abs } = await db.from('absencies').select('*').eq('data', dataStrSql);
                     
                     if(abs && abs.length > 0) {
@@ -634,29 +617,21 @@
                             const b = horariEscola.value.find(x => x.id === a.bloc_id);
                             const nomDocent = d ? d.nom : 'Desconegut';
                             const nomFranja = b ? b.nom : 'Desconegut';
-                            
                             const assignacioBase = assignacionsHorari.value.find(asig => asig.docent_id === a.docent_id && asig.dia === diesSetmana[i] && asig.bloc_id === a.bloc_id);
                             const nomAssignatura = assignacioBase && assignacioBase.grup ? assignacioBase.grup : 'Classe pendent';
                             
-                            const formatHoraClasse = nomFranja + ': ' + nomAssignatura + ' (' + nomDocent + ')';
+                            const formatHoraClasse = nomFranja + ' - ' + nomAssignatura + ' (' + nomDocent + ')';
                             
                             if(a.assignacions && a.assignacions.length > 0) {
-                                a.assignacions.forEach(assig => {
-                                    textSubst += formatHoraClasse + ' - ' + assig.nomSubstitut + '\n';
-                                });
+                                a.assignacions.forEach(assig => { textSubst += formatHoraClasse + ' - Cobreix: ' + assig.nomSubstitut + '\n'; });
                             } else {
                                 textSubst += formatHoraClasse + ' - PENDENT\n';
                             }
                         });
-                        
-                        if(diesWhatsapp.value[i].tasks.trim() !== '') {
-                            diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
-                        } else {
-                            diesWhatsapp.value[i].tasks = textSubst.trim();
-                        }
+                        if(diesWhatsapp.value[i].tasks.trim() !== '') diesWhatsapp.value[i].tasks += '\n' + textSubst.trim();
+                        else diesWhatsapp.value[i].tasks = textSubst.trim();
                     }
                 }
-                
                 alert("S'han importat les absències de la setmana seleccionada.");
                 generarMissatgeWhatsapp();
             };
@@ -708,11 +683,8 @@
                 if(resDocents.data) docents.value = resDocents.data; if(resBlocs.data) horariEscola.value = resBlocs.data;
                 if(resAsig.data) assignacionsHorari.value = resAsig.data; if(resGrups.data) grupsTots.value = resGrups.data;
                 
-                if(resConfig.data && resConfig.data.length > 0) {
-                    categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
-                } else {
-                    categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI'];
-                }
+                if(resConfig.data && resConfig.data.length > 0) { categoriesDocents.value = JSON.parse(resConfig.data[0].valor);
+                } else { categoriesDocents.value = ['EI', 'CI', 'CM', 'CS', 'Equip directiu', 'Especialistes', 'SIEI']; }
                 if(categoriesDocents.value.length > 0) novaCategoriaMestre.value = categoriesDocents.value[0];
 
                 await carregarAbsenciesMes(); await carregarAbsenciesDia();
@@ -748,31 +720,23 @@
             };
             const tancarSessio = async () => { await db.auth.signOut(); usuariAutenticat.value = false; };
 
-            const guardarCategoriesDB = async () => {
-                await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) });
-            };
+            const guardarCategoriesDB = async () => { await db.from('configuracio').upsert({ clau: 'categories_docents', valor: JSON.stringify(categoriesDocents.value) }); };
             const afegirCategoria = async () => {
                 const nova = novaCategoria.value.trim();
-                if(nova && !categoriesDocents.value.includes(nova)) {
-                    categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB();
-                }
+                if(nova && !categoriesDocents.value.includes(nova)) { categoriesDocents.value.push(nova); novaCategoria.value = ''; await guardarCategoriesDB(); }
             };
-            const esborrarCategoria = async (idx) => {
-                categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB();
-            };
+            const esborrarCategoria = async (idx) => { categoriesDocents.value.splice(idx, 1); await guardarCategoriesDB(); };
 
             const afegirGrupsPerDefecte = async () => {
                 const llistaDemanada = ['I3', 'I3 A', 'I3 B', 'I4', 'I4 A', 'I4 B', 'I5', 'I5 A', 'I5 B', '1r', '1r A', '1r B', '2n', '2n A', '2n B', '3r', '3r A', '3r B', '4t', '4t A', '4t B', '5è', '5è A', '5è B', '6è', '6è A', '6è B'];
-                let ordreAct = grupsTots.value.length + 1;
-                let afegits = 0;
+                let ordreAct = grupsTots.value.length + 1; let afegits = 0;
                 for(let nomGrup of llistaDemanada) {
                     if(!grupsTots.value.find(g => g.nom === nomGrup)) {
                         const { data } = await db.from('grups').insert({ nom: nomGrup, ordre: ordreAct++ }).select();
                         if(data) { grupsTots.value.push(data[0]); afegits++; }
                     }
                 }
-                if(afegits > 0) alert("✅ S'han afegit " + afegits + " grups nous automàticament.");
-                else alert("Tots els grups per defecte ja estaven creats.");
+                if(afegits > 0) alert("✅ S'han afegit " + afegits + " grups nous automàticament."); else alert("Tots els grups per defecte ja estaven creats.");
             };
 
             const getAssignacio = (docentId, dia, blocId) => {
@@ -786,8 +750,7 @@
                     assignacionsHorari.value[asigIndex][camp] = valor;
                 } else {
                     let tempPayload = { docent_id: docentId, dia: dia, bloc_id: blocId, grup: '', materia: '', disponible: false, id: 'temp_' + Date.now() };
-                    tempPayload[camp] = valor;
-                    assignacionsHorari.value.push(tempPayload);
+                    tempPayload[camp] = valor; assignacionsHorari.value.push(tempPayload);
                 }
             };
 
@@ -797,9 +760,7 @@
                 let actualitzat = assignacionsHorari.value[asigIndex];
                 
                 if (actualitzat.grup.trim() === '' && !actualitzat.disponible) {
-                    if (!String(actualitzat.id).startsWith('temp_')) {
-                        await db.from('assignacions').delete().eq('id', actualitzat.id);
-                    }
+                    if (!String(actualitzat.id).startsWith('temp_')) { await db.from('assignacions').delete().eq('id', actualitzat.id); }
                     assignacionsHorari.value.splice(asigIndex, 1);
                 } else {
                     if (String(actualitzat.id).startsWith('temp_')) {
@@ -878,7 +839,6 @@
                     const search = grupId.toLowerCase();
                     const idx = text.indexOf(search);
                     if (idx === -1) return false;
-                    
                     const charSeguent = text[idx + search.length];
                     if (charSeguent && /[a-z0-9àèéíòóúïü]/i.test(charSeguent)) return false;
                     return true;
@@ -971,8 +931,7 @@
                 usuariAutenticat, correu, contrasenya, errorLogin, vistaActual, modeHorari, 
                 docents, docentsAgrupats, horariEscola, diesSetmana, grupsTots, llistaGrupsDinamica, 
                 mestreSeleccionatHorari, mestreAClonar, grupSeleccionatHorari, novaAbsencia, llistaAbsencies, 
-                modePinzell, textPinzell, comodiPinzell, aplicarPinzell,
-                textEntradaManual, processarEntradaManual,
+                modePinzell, textPinzell, comodiPinzell, aplicarPinzell, textEntradaManual, processarEntradaManual,
                 categoriesDocents, novaCategoria, afegirCategoria, esborrarCategoria, afegirGrupsPerDefecte,
                 minutsPendentsTotals, assignacioEnCurs, nouMestreNom, nouGrupNom, nouBlocNom, nouBlocMinuts, novaCategoriaMestre,
                 dataSeleccionada, mesActual, anyActual, nomMesActual, diesDelMes, espaisBuitsCalendari, 
@@ -986,11 +945,6 @@
             }
         }
     });
-
-    app.config.errorHandler = (err, instance, info) => {
-        console.error(err);
-        document.body.innerHTML = '<div style="max-width:600px; margin:50px auto; background:#fee2e2; border:2px solid #ef4444; padding:20px; border-radius:8px; color:#991b1b; font-family:sans-serif;"><h2 style="font-size:1.5rem; font-weight:bold; margin-bottom:10px;">🚨 Error intern de Vue</h2><div style="background:white; padding:10px; margin-top:10px; font-family:monospace; border:1px solid #fca5a5;">' + err.message + '</div><p style="margin-top:10px; font-size:0.8rem;">Info: ' + info + '</p></div>';
-    };
 
     app.mount('#app');
 </script>
